@@ -328,7 +328,6 @@ testCases := []string{
     "<15NPEPTIDE",             // Unclosed global mod
     "ELVIS(PEPTIDE",           // Unclosed parenthesis
     "ELVIS)PEPTIDE",           // Unmatched closing parenthesis
-    "{InvalidGlycan}PEPTIDE",  // Invalid labile mod (must start with Glycan:)
 }
 
 for _, test := range testCases {
