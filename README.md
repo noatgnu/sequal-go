@@ -171,7 +171,7 @@ fmt.Printf("Count: %d\n", len(unknownMods)) // Output: 2
 
 ```go
 // Ambiguous amino acid sequence
-seq, _ := sequal.FromProforma("PEPTIDE(?LI)SEQUENCE")
+seq, _ := sequal.FromProforma("(?LI)PEPTIDESEQUENCE")
 ambiguities := seq.GetSequenceAmbiguities()
 fmt.Printf("Ambiguous sequence: %s\n", ambiguities[0].GetValue()) // Output: LI
 fmt.Printf("Position: %d\n", ambiguities[0].GetPosition()) // Output: 0 (always 0)
