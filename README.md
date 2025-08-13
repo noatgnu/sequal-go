@@ -1,6 +1,6 @@
 # Sequal - Go ProForma Parser
 
-A Go implementation of a ProForma 2.0 peptide sequence notation parser, based on the TypeScript [SequalJS](https://github.com/antmass/SequalJS) package. This library provides comprehensive support for parsing, manipulating, and generating ProForma notation strings for peptide and protein sequences.
+A Go implementation of a ProForma 2.0 peptide sequence notation parser. This library provides comprehensive support for parsing, manipulating, and generating ProForma notation strings for peptide and protein sequences.
 
 ## Features
 
