@@ -56,18 +56,18 @@ func ParseProFormaDetailed(proformaStr string) (*ParseProFormaResult, error) {
 	if err != nil {
 		return nil, err
 	}
-	
+
 	result := &ParseProFormaResult{
 		BaseSequence:        baseSeq,
 		Modifications:       mods,
 		GlobalMods:          globalMods,
 		SequenceAmbiguities: seqAmbig,
 	}
-	
+
 	if len(chargeInfo) > 0 {
 		result.Charge = chargeInfo[0]
 	}
-	
+
 	if strings.Contains(proformaStr, "/") {
 		chargeInfoResult, err := parser.parseChargeInfo(proformaStr)
 		if err == nil && len(chargeInfoResult) > 2 {
@@ -76,7 +76,7 @@ func ParseProFormaDetailed(proformaStr string) (*ParseProFormaResult, error) {
 			}
 		}
 	}
-	
+
 	return result, nil
 }
 
@@ -206,9 +206,6 @@ func (p *ProFormaParser) Parse(proformaStr string) (string, map[string][]*Modifi
 		j += i
 
 		modStr := proformaStr[i+1 : j]
-		if !strings.HasPrefix(modStr, "Glycan:") {
-			return "", nil, nil, nil, nil, fmt.Errorf("labile modification must start with 'Glycan:', found: %s", modStr)
-		}
 
 		mod := p.createModification(modStr, map[string]interface{}{"isLabile": true})
 		currentMods := getModsAtPosition(-3)
@@ -585,7 +582,7 @@ func (p *ProFormaParser) createModification(modStr string, options map[string]in
 			return NewModification(modStr, nil, nil, nil, "variable", false, 0, massValue, false,
 				nil, false, false, false, nil, false, true, rangeStart, rangeEnd, nil, modValueForMassShift)
 		}
-		return NewModification("Mass:"+modStr, nil, nil, nil, "static", false, 0, massValue, false,
+		return NewModification("Mass:"+modStr, nil, nil, nil, modType, isLabile, 0, massValue, false,
 			nil, false, false, false, nil, false, inRange, rangeStart, rangeEnd, nil, modValueForMassShift)
 	}
 

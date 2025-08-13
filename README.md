@@ -115,11 +115,21 @@ fmt.Printf("Ambiguity group: %s\n", *mods[0].GetAmbiguityGroup()) // Output: 1
 ### Labile Modifications
 
 ```go
-// Labile modification (typically glycans)
+// Glycan labile modification
 seq, _ := sequal.FromProforma("{Glycan:Hex(1)HexNAc(2)}PEPTIDE")
 labileMods := seq.GetMods()[-3] // Labile modifications
 fmt.Printf("Labile mod: %s\n", labileMods[0].GetValue()) // Output: Hex(1)HexNAc(2)
 fmt.Printf("Mod type: %s\n", labileMods[0].GetModType()) // Output: labile
+
+// Non-glycan labile modification
+seq, _ := sequal.FromProforma("{Phospho}PEPTIDE")
+labileMods = seq.GetMods()[-3]
+fmt.Printf("Labile mod: %s\n", labileMods[0].GetValue()) // Output: Phospho
+
+// Mass shift labile modification
+seq, _ := sequal.FromProforma("{+79.966}PEPTIDE")
+labileMods = seq.GetMods()[-3]
+fmt.Printf("Labile mod: %s\n", labileMods[0].GetValue()) // Output: +79.966
 ```
 
 ### Charge States and Ionic Species

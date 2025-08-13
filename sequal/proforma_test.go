@@ -88,13 +88,13 @@ func TestProFormaParserTerminalModifications(t *testing.T) {
 		if sequence != "PEPTIDE" {
 			t.Errorf("Expected 'PEPTIDE', got '%s'", sequence)
 		}
-		
+
 		if nTermMods, exists := mods["-1"]; !exists {
 			t.Error("Expected N-terminal modifications")
 		} else if len(nTermMods) != 1 {
 			t.Errorf("Expected 1 N-terminal modification, got %d", len(nTermMods))
 		}
-		
+
 		if cTermMods, exists := mods["-2"]; !exists {
 			t.Error("Expected C-terminal modifications")
 		} else if len(cTermMods) != 1 {
@@ -218,36 +218,61 @@ func TestProFormaParserChargeInfo(t *testing.T) {
 }
 
 func TestProFormaParserLabileMods(t *testing.T) {
-	proforma := "{Glycan:Hex(1)HexNAc(2)}PEPTIDE"
-	baseSeq, modifications, _, _, _, err := ParseProForma(proforma)
-	if err != nil {
-		t.Fatalf("Failed to parse ProForma '%s': %v", proforma, err)
+	testCases := []struct {
+		name     string
+		proforma string
+		expected string
+	}{
+		{
+			name:     "Glycan labile modification",
+			proforma: "{Glycan:Hex(1)HexNAc(2)}PEPTIDE",
+			expected: "PEPTIDE",
+		},
+		{
+			name:     "Non-glycan labile modification",
+			proforma: "{Phospho}PEPTIDE",
+			expected: "PEPTIDE",
+		},
+		{
+			name:     "Mass shift labile modification",
+			proforma: "{+79.966}PEPTIDE",
+			expected: "PEPTIDE",
+		},
 	}
 
-	if baseSeq != "PEPTIDE" {
-		t.Errorf("Expected sequence 'PEPTIDE', got '%s'", baseSeq)
-	}
-
-	// Check labile modifications (-3)
-	if labileMods, exists := modifications["-3"]; exists {
-		if len(labileMods) != 1 {
-			t.Errorf("Expected 1 labile modification, got %d", len(labileMods))
-		} else {
-			if labileMods[0].GetModType() != "labile" {
-				t.Errorf("Expected labile mod type, got '%s'", labileMods[0].GetModType())
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			baseSeq, modifications, _, _, _, err := ParseProForma(tc.proforma)
+			if err != nil {
+				t.Fatalf("Failed to parse ProForma '%s': %v", tc.proforma, err)
 			}
-		}
-	} else {
-		t.Errorf("Expected labile modification, but found none")
+
+			if baseSeq != tc.expected {
+				t.Errorf("Expected sequence '%s', got '%s'", tc.expected, baseSeq)
+			}
+
+			// Check labile modifications (-3)
+			if labileMods, exists := modifications["-3"]; exists {
+				if len(labileMods) != 1 {
+					t.Errorf("Expected 1 labile modification, got %d", len(labileMods))
+				} else {
+					if labileMods[0].GetModType() != "labile" {
+						t.Errorf("Expected labile mod type, got '%s'", labileMods[0].GetModType())
+					}
+				}
+			} else {
+				t.Errorf("Expected labile modification, but found none")
+			}
+		})
 	}
 }
 
 func TestProFormaParserUnknownPositionMods(t *testing.T) {
 	tests := []struct {
-		name             string
-		proforma         string
-		expectedSeq      string
-		expectedUnknown  int
+		name            string
+		proforma        string
+		expectedSeq     string
+		expectedUnknown int
 	}{
 		{
 			name:            "Single unknown position",
@@ -338,21 +363,21 @@ func TestProFormaParserRangeMods(t *testing.T) {
 
 func TestProFormaParserCrosslinks(t *testing.T) {
 	tests := []struct {
-		name             string
-		proforma         string
-		expectedSeq      string
+		name              string
+		proforma          string
+		expectedSeq       string
 		expectedCrosslink string
 	}{
 		{
-			name:             "Crosslink with ID",
-			proforma:         "PEPTK[XL:DSS#XL1]IDE",
-			expectedSeq:      "PEPTKIDE",
+			name:              "Crosslink with ID",
+			proforma:          "PEPTK[XL:DSS#XL1]IDE",
+			expectedSeq:       "PEPTKIDE",
 			expectedCrosslink: "XL1",
 		},
 		{
-			name:             "Crosslink reference",
-			proforma:         "PEPTK[#XL1]IDE",
-			expectedSeq:      "PEPTKIDE",
+			name:              "Crosslink reference",
+			proforma:          "PEPTK[#XL1]IDE",
+			expectedSeq:       "PEPTKIDE",
 			expectedCrosslink: "XL1",
 		},
 	}
@@ -509,10 +534,6 @@ func TestProFormaParserErrorCases(t *testing.T) {
 		{
 			name:     "Unmatched closing parenthesis",
 			proforma: "ELVIS)PEPTIDE",
-		},
-		{
-			name:     "Invalid labile mod",
-			proforma: "{InvalidGlycan}PEPTIDE",
 		},
 	}
 
