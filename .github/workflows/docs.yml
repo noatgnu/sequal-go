@@ -23,7 +23,7 @@ jobs:
       - name: Generate docs
         run: |
           mkdir -p docs
-          /home/runner/go/bin/godoc -html github.com/noatgnu/sequal-go/sequal > docs/index.html
+          go doc -html ./sequal > docs/index.html
 
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
