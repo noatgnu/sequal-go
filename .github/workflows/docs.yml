@@ -20,10 +20,13 @@ jobs:
       - name: Install godoc
         run: go install golang.org/x/tools/cmd/godoc@latest
 
+      - name: Install doc2go
+        run: go install abhinav.github.io/doc2go@latest
+
       - name: Generate docs
         run: |
           mkdir -p docs
-          go doc -html ./sequal > docs/index.html
+          /home/runner/go/bin/doc2go -out docs/ ./sequal
 
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
