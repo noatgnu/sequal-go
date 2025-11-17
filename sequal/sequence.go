@@ -67,6 +67,17 @@ func NewSequence(seq interface{}, mods map[int][]*Modification, parse bool,
 // FromProforma creates a Sequence object from a ProForma notation string.
 // Supports all ProForma 2.0 features including multi-chain sequences (//),
 // chimeric sequences (+), and all modification types.
+//
+// Example:
+//
+//	proformaStr := "PEPT[Phospho]IDE"
+//	seq, err := sequal.FromProforma(proformaStr)
+//	if err != nil {
+//		fmt.Println("Error:", err)
+//	}
+//
+//	fmt.Println(seq.ToStrippedString()) // "PEPTIDE"
+//	fmt.Println(seq.ToProforma())      // "PEPT[Phospho]IDE"
 func FromProforma(proformaStr string) (*Sequence, error) {
 	if strings.Contains(proformaStr, "//") {
 		chains := strings.Split(proformaStr, "//")
@@ -290,7 +301,19 @@ func (s *Sequence) extractModValue(modStr string) string {
 	return modStr
 }
 
-// ToProforma converts the sequence to ProForma format
+// ToProforma converts the sequence to ProForma format.
+//
+// Example:
+//
+//	// Create a sequence object
+//	seq, err := sequal.FromProforma("PEPT[Phospho]IDE")
+//	if err != nil {
+//		fmt.Println("Error:", err)
+//	}
+//
+//	// Convert back to ProForma string
+//	proformaStr := seq.ToProforma()
+//	fmt.Println(proformaStr) // "PEPT[Phospho]IDE"
 func (s *Sequence) ToProforma() string {
 	if s.isMultiChain {
 		chains := make([]string, len(s.chains))

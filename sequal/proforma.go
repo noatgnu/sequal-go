@@ -46,6 +46,14 @@ type ParseProFormaResult struct {
 
 // ParseProForma parses a ProForma string and returns its basic components.
 // This is a convenience function that creates a parser and calls Parse.
+//
+// Example:
+//
+//	proformaStr := "PEPTIDE"
+//	baseSeq, mods, globalMods, seqAmbig, chargeInfo, err := sequal.ParseProForma(proformaStr)
+//	if err != nil {
+//		fmt.Println("Error:", err)
+//	}
 func ParseProForma(proformaStr string) (string, map[string][]*Modification, []*GlobalModification, []*SequenceAmbiguity, []*int, error) {
 	parser := NewProFormaParser()
 	return parser.Parse(proformaStr)
@@ -53,6 +61,17 @@ func ParseProForma(proformaStr string) (string, map[string][]*Modification, []*G
 
 // ParseProFormaDetailed parses a ProForma string and returns a structured result
 // containing all parsed components including charge, ionic species, and named entities (ProForma 2.1).
+//
+// Example:
+//
+//	proformaStr := "[Acetyl]-PEPTIDE/2"
+//	result, err := sequal.ParseProFormaDetailed(proformaStr)
+//	if err != nil {
+//		fmt.Println("Error:", err)
+//	}
+//
+//	fmt.Println("Base Sequence:", result.BaseSequence)
+//	fmt.Println("Charge:", *result.Charge)
 func ParseProFormaDetailed(proformaStr string) (*ParseProFormaResult, error) {
 	parser := NewProFormaParser()
 

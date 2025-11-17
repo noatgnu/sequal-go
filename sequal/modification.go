@@ -58,6 +58,15 @@ var KnownSources = map[string]bool{
 // ambiguity groups, and localization scores. The modType parameter must be one of the
 // valid modification types (static, variable, terminal, ambiguous, crosslink, branch,
 // gap, labile, unknown_position, global).
+//
+// Example:
+//
+//	// Create a new 'Phospho' modification
+//	mod := sequal.NewModification("Phospho", nil, nil, nil, "static", false, 0, 79.966331, false,
+//		nil, false, false, false, nil, false, false, nil, nil, nil, nil,
+//		nil, nil, false, false, false)
+//
+//	fmt.Println(mod.GetValue()) // "Phospho"
 func NewModification(value string, position *int, regexPattern *string, fullName *string,
 	modType string, labile bool, labilNumber int, mass float64, allFilled bool,
 	crosslinkID *string, isCrosslinkRef bool, isBranchRef bool, isBranch bool,

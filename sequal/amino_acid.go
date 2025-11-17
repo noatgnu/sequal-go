@@ -18,6 +18,17 @@ type AminoAcid struct {
 // NewAminoAcid creates a new AminoAcid instance with the specified value, position, and optional mass.
 // If the amino acid is not recognized and no mass is provided, it returns an error.
 // The mass parameter overrides the default mass for known amino acids.
+//
+// Example:
+//
+//	// Create a new amino acid 'P' at position 0
+//	pos := 0
+//	aa, err := sequal.NewAminoAcid("P", &pos, nil)
+//	if err != nil {
+//		fmt.Println("Error:", err)
+//	}
+//
+//	fmt.Println(aa.GetValue()) // "P"
 func NewAminoAcid(value string, position *int, mass *float64) (*AminoAcid, error) {
 	if _, exists := AAMass[value]; !exists && mass == nil {
 		return nil, fmt.Errorf("unknown amino acid '%s' and no mass provided", value)
@@ -139,11 +150,11 @@ func (aa *AminoAcid) Equal(other BaseBlock) bool {
 	if !ok {
 		return false
 	}
-	
+
 	if aa.GetValue() != otherAA.GetValue() {
 		return false
 	}
-	
+
 	if aa.GetPosition() == nil && otherAA.GetPosition() == nil {
 	} else if aa.GetPosition() != nil && otherAA.GetPosition() != nil {
 		if *aa.GetPosition() != *otherAA.GetPosition() {
@@ -152,7 +163,7 @@ func (aa *AminoAcid) Equal(other BaseBlock) bool {
 	} else {
 		return false
 	}
-	
+
 	if aa.GetMass() == nil && otherAA.GetMass() == nil {
 	} else if aa.GetMass() != nil && otherAA.GetMass() != nil {
 		if *aa.GetMass() != *otherAA.GetMass() {
@@ -161,17 +172,17 @@ func (aa *AminoAcid) Equal(other BaseBlock) bool {
 	} else {
 		return false
 	}
-	
+
 	if len(aa.mods) != len(otherAA.mods) {
 		return false
 	}
-	
+
 	for i, mod := range aa.mods {
 		if !mod.Equal(*otherAA.mods[i]) {
 			return false
 		}
 	}
-	
+
 	return true
 }
 
@@ -199,7 +210,7 @@ func (aa *AminoAcid) ToDebugString() string {
 		}
 		modStr += mod.String()
 	}
-	return fmt.Sprintf("AminoAcid(value='%s', position=%d, mods=[%s])", 
+	return fmt.Sprintf("AminoAcid(value='%s', position=%d, mods=[%s])",
 		aa.GetValue(), IntValue(aa.GetPosition()), modStr)
 }
 

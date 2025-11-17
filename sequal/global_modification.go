@@ -12,7 +12,14 @@ type GlobalModification struct {
 	globalModType  string
 }
 
-// NewGlobalModification creates a new GlobalModification instance
+// NewGlobalModification creates a new GlobalModification instance.
+//
+// Example:
+//
+//	// Create a new global modification 'Carbamidomethyl' for 'C' residues
+//	mod := sequal.NewGlobalModification("Carbamidomethyl", []string{"C"}, "fixed", nil, nil, false, false)
+//
+//	fmt.Println(mod.ToProforma()) // "<[Carbamidomethyl]@C>"
 func NewGlobalModification(value string, targetResidues []string, modType string, positionConstraint []string, limitPerPosition *int, colocalizeKnown bool, colocalizeUnknown bool) *GlobalModification {
 	if modType != "isotope" && modType != "fixed" {
 		panic("Global modification type must be 'isotope' or 'fixed'")
