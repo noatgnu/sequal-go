@@ -1,0 +1,963 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="doc2go">
+    <link href="../../../../_/css/main.css" rel="stylesheet" />
+    <link rel="apple-touch-icon" sizes="180x180" href="../../../../_/icons/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../../../../_/icons/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../../../_/icons/favicon-16x16.png">
+    <link rel="shortcut icon" href="../../../../_/icons/favicon.ico"><title>sequal</title>
+</head>
+  <body>
+    <nav>
+        <a href="../../..">github.com</a>/<a href="../..">noatgnu</a>/<a href="..">sequal-go</a>/sequal<span class="navbar-right">
+          <a href="../../../..">Root</a> | <a href="#pkg-index">Index</a></span>
+      </nav>
+    <main><h2 id="pkg-overview">package sequal</h2>
+<pre class="chroma"><span class="kn">import</span> <span class="s">&#34;github.com/noatgnu/sequal-go/sequal&#34;</span></pre>
+<p>Package sequal provides a library for parsing and generating ProForma 2.1 strings.
+This file contains constants and data maps used throughout the library.
+<h3 id="pkg-index">Index</h3>
+<ul>
+  <li><a href="#pkg-constants">Constants</a></li><li><a href="#pkg-variables">Variables</a></li><li><a href="#CalculateHashCode">func CalculateHashCode(input string) int32</a></li>
+  <li><a href="#CountUniqueElements">func CountUniqueElements(seq []BaseBlock) map[string]int</a></li>
+  <li><a href="#Float64Ptr">func Float64Ptr(v float64) *float64</a></li>
+  <li><a href="#Float64Value">func Float64Value(ptr *float64) float64</a></li>
+  <li><a href="#IntPtr">func IntPtr(v int) *int</a></li>
+  <li><a href="#IntValue">func IntValue(ptr *int) int</a></li>
+  <li><a href="#OrderedSerializePositionDict">func OrderedSerializePositionDict(positions map[int]interface{}) (string, error)</a></li>
+  <li><a href="#ParseProForma">func ParseProForma(proformaStr string) (string, map[string][]*Modification, []*GlobalModification, ...)</a></li>
+  <li><a href="#SplitChimericProforma">func SplitChimericProforma(proformaStr string) []string</a></li>
+  <li><a href="#StringPtr">func StringPtr(v string) *string</a></li>
+  <li><a href="#StringValue">func StringValue(ptr *string) string</a></li>
+  <li><a href="#VariablePositionPlacementGenerator">func VariablePositionPlacementGenerator(positions []int) [][]int</a></li>
+  <li>
+      <a href="#AminoAcid">type AminoAcid</a>
+      <ul>
+          <li><a href="#NewAminoAcid">func NewAminoAcid(value string, position *int, mass *float64) (*AminoAcid, error)</a></li>
+          <li><a href="#AminoAcid.AddModification">func (aa *AminoAcid) AddModification(mod *Modification)</a></li>
+          <li><a href="#AminoAcid.Equal">func (aa *AminoAcid) Equal(other BaseBlock) bool</a></li>
+          <li><a href="#AminoAcid.GetMods">func (aa *AminoAcid) GetMods() []*Modification</a></li>
+          <li><a href="#AminoAcid.GetTotalMass">func (aa *AminoAcid) GetTotalMass() float64</a></li>
+          <li><a href="#AminoAcid.HasModification">func (aa *AminoAcid) HasModification(mod interface{}) bool</a></li>
+          <li><a href="#AminoAcid.Hash">func (aa *AminoAcid) Hash() (string, error)</a></li>
+          <li><a href="#AminoAcid.RemoveModification">func (aa *AminoAcid) RemoveModification(mod interface{}) bool</a></li>
+          <li><a href="#AminoAcid.SetModification">func (aa *AminoAcid) SetModification(mod *Modification)</a></li>
+          <li><a href="#AminoAcid.String">func (aa *AminoAcid) String() string</a></li>
+          <li><a href="#AminoAcid.ToDebugString">func (aa *AminoAcid) ToDebugString() string</a></li>
+          <li><a href="#AminoAcid.ToMap">func (aa *AminoAcid) ToMap() map[string]interface{}</a></li>
+          </ul>
+      </li>
+  <li>
+      <a href="#BaseBlock">type BaseBlock</a>
+      </li>
+  <li>
+      <a href="#BaseBlockImpl">type BaseBlockImpl</a>
+      <ul>
+          <li><a href="#NewBaseBlock">func NewBaseBlock(value string, position *int, branch bool, mass *float64) *BaseBlockImpl</a></li>
+          <li><a href="#BaseBlockImpl.Equal">func (b *BaseBlockImpl) Equal(other BaseBlock) bool</a></li>
+          <li><a href="#BaseBlockImpl.GetExtra">func (b *BaseBlockImpl) GetExtra() interface{}</a></li>
+          <li><a href="#BaseBlockImpl.GetMass">func (b *BaseBlockImpl) GetMass() *float64</a></li>
+          <li><a href="#BaseBlockImpl.GetPosition">func (b *BaseBlockImpl) GetPosition() *int</a></li>
+          <li><a href="#BaseBlockImpl.GetValue">func (b *BaseBlockImpl) GetValue() string</a></li>
+          <li><a href="#BaseBlockImpl.Hash">func (b *BaseBlockImpl) Hash() (string, error)</a></li>
+          <li><a href="#BaseBlockImpl.IsBranch">func (b *BaseBlockImpl) IsBranch() bool</a></li>
+          <li><a href="#BaseBlockImpl.SetExtra">func (b *BaseBlockImpl) SetExtra(value interface{})</a></li>
+          <li><a href="#BaseBlockImpl.SetMass">func (b *BaseBlockImpl) SetMass(mass *float64)</a></li>
+          <li><a href="#BaseBlockImpl.SetPosition">func (b *BaseBlockImpl) SetPosition(position *int)</a></li>
+          <li><a href="#BaseBlockImpl.String">func (b *BaseBlockImpl) String() string</a></li>
+          <li><a href="#BaseBlockImpl.ToMap">func (b *BaseBlockImpl) ToMap() map[string]interface{}</a></li>
+          </ul>
+      </li>
+  <li>
+      <a href="#GlobalModification">type GlobalModification</a>
+      <ul>
+          <li><a href="#NewGlobalModification">func NewGlobalModification(value string, targetResidues []string, modType string, ...) *GlobalModification</a></li>
+          <li><a href="#GlobalModification.GetGlobalModType">func (gm *GlobalModification) GetGlobalModType() string</a></li>
+          <li><a href="#GlobalModification.GetTargetResidues">func (gm *GlobalModification) GetTargetResidues() []string</a></li>
+          <li><a href="#GlobalModification.Repr">func (gm *GlobalModification) Repr() string</a></li>
+          <li><a href="#GlobalModification.String">func (gm *GlobalModification) String() string</a></li>
+          <li><a href="#GlobalModification.ToDict">func (gm *GlobalModification) ToDict() map[string]interface{}</a></li>
+          <li><a href="#GlobalModification.ToProforma">func (gm *GlobalModification) ToProforma() string</a></li>
+          </ul>
+      </li>
+  <li>
+      <a href="#Modification">type Modification</a>
+      <ul>
+          <li><a href="#DeepCopyModifications">func DeepCopyModifications(mods []*Modification) []*Modification</a></li>
+          <li><a href="#NewModification">func NewModification(value string, position *int, regexPattern *string, fullName *string, ...) *Modification</a></li>
+          <li><a href="#Modification.Equal">func (m *Modification) Equal(other Modification) bool</a></li>
+          <li><a href="#Modification.FindPositions">func (m *Modification) FindPositions(seq string) [][]int</a></li>
+          <li><a href="#Modification.GetAmbiguityGroup">func (m *Modification) GetAmbiguityGroup() *string</a></li>
+          <li><a href="#Modification.GetColocalizeKnown">func (m *Modification) GetColocalizeKnown() bool</a></li>
+          <li><a href="#Modification.GetColocalizeUnknown">func (m *Modification) GetColocalizeUnknown() bool</a></li>
+          <li><a href="#Modification.GetCrosslinkID">func (m *Modification) GetCrosslinkID() *string</a></li>
+          <li><a href="#Modification.GetFullName">func (m *Modification) GetFullName() *string</a></li>
+          <li><a href="#Modification.GetInfoTags">func (m *Modification) GetInfoTags() []string</a></li>
+          <li><a href="#Modification.GetLabileNumber">func (m *Modification) GetLabileNumber() int</a></li>
+          <li><a href="#Modification.GetLimitPerPosition">func (m *Modification) GetLimitPerPosition() *int</a></li>
+          <li><a href="#Modification.GetMass">func (m *Modification) GetMass() *float64</a></li>
+          <li><a href="#Modification.GetModType">func (m *Modification) GetModType() string</a></li>
+          <li><a href="#Modification.GetModificationValue">func (m *Modification) GetModificationValue() *ModificationValue</a></li>
+          <li><a href="#Modification.GetObservedMass">func (m *Modification) GetObservedMass() *float64</a></li>
+          <li><a href="#Modification.GetOriginalValue">func (m *Modification) GetOriginalValue() string</a></li>
+          <li><a href="#Modification.GetPositionConstraint">func (m *Modification) GetPositionConstraint() []string</a></li>
+          <li><a href="#Modification.GetRegex">func (m *Modification) GetRegex() *regexp.Regexp</a></li>
+          <li><a href="#Modification.GetSource">func (m *Modification) GetSource() *string</a></li>
+          <li><a href="#Modification.GetSynonyms">func (m *Modification) GetSynonyms() []string</a></li>
+          <li><a href="#Modification.GetValue">func (m *Modification) GetValue() string</a></li>
+          <li><a href="#Modification.HasAmbiguity">func (m *Modification) HasAmbiguity() bool</a></li>
+          <li><a href="#Modification.HasBranch">func (m *Modification) HasBranch() bool</a></li>
+          <li><a href="#Modification.HasCrosslink">func (m *Modification) HasCrosslink() bool</a></li>
+          <li><a href="#Modification.Hash">func (m *Modification) Hash() (string, error)</a></li>
+          <li><a href="#Modification.IsAllFilled">func (m *Modification) IsAllFilled() bool</a></li>
+          <li><a href="#Modification.IsAmbiguityRef">func (m *Modification) IsAmbiguityRef() bool</a></li>
+          <li><a href="#Modification.IsCrosslinkRef">func (m *Modification) IsCrosslinkRef() bool</a></li>
+          <li><a href="#Modification.IsIonType">func (m *Modification) IsIonType() bool</a></li>
+          <li><a href="#Modification.IsLabile">func (m *Modification) IsLabile() bool</a></li>
+          <li><a href="#Modification.String">func (m *Modification) String() string</a></li>
+          <li><a href="#Modification.ToMap">func (m *Modification) ToMap() map[string]interface{}</a></li>
+          <li><a href="#Modification.ToProforma">func (m *Modification) ToProforma() string</a></li>
+          </ul>
+      </li>
+  <li>
+      <a href="#ModificationMap">type ModificationMap</a>
+      <ul>
+          <li><a href="#NewModificationMap">func NewModificationMap(seq string, mods []*Modification, ignorePositions map[int]bool, ...) *ModificationMap</a></li>
+          <li><a href="#ModificationMap.GetMod">func (mm *ModificationMap) GetMod(modName string) *Modification</a></li>
+          <li><a href="#ModificationMap.GetModPositions">func (mm *ModificationMap) GetModPositions(modName string) []int</a></li>
+          <li><a href="#ModificationMap.GetModsAtPosition">func (mm *ModificationMap) GetModsAtPosition(position int) []*Modification</a></li>
+          <li><a href="#ModificationMap.HasModAtPosition">func (mm *ModificationMap) HasModAtPosition(position int, modName *string) bool</a></li>
+          <li><a href="#ModificationMap.ToDict">func (mm *ModificationMap) ToDict() map[string]interface{}</a></li>
+          </ul>
+      </li>
+  <li>
+      <a href="#ModificationValue">type ModificationValue</a>
+      <ul>
+          <li><a href="#NewModificationValue">func NewModificationValue(value string, mass *float64) *ModificationValue</a></li>
+          <li><a href="#ModificationValue.ForEach">func (mv *ModificationValue) ForEach(fn func(pv *PipeValue))</a></li>
+          <li><a href="#ModificationValue.Get">func (mv *ModificationValue) Get(index int) *PipeValue</a></li>
+          <li><a href="#ModificationValue.GetAmbiguityGroup">func (mv *ModificationValue) GetAmbiguityGroup() *string</a></li>
+          <li><a href="#ModificationValue.GetCrosslinkID">func (mv *ModificationValue) GetCrosslinkID() *string</a></li>
+          <li><a href="#ModificationValue.GetInfoTags">func (mv *ModificationValue) GetInfoTags() []string</a></li>
+          <li><a href="#ModificationValue.GetMass">func (mv *ModificationValue) GetMass() *float64</a></li>
+          <li><a href="#ModificationValue.GetObservedMass">func (mv *ModificationValue) GetObservedMass() *float64</a></li>
+          <li><a href="#ModificationValue.GetPipeValues">func (mv *ModificationValue) GetPipeValues() []*PipeValue</a></li>
+          <li><a href="#ModificationValue.GetPrimaryValue">func (mv *ModificationValue) GetPrimaryValue() string</a></li>
+          <li><a href="#ModificationValue.GetSource">func (mv *ModificationValue) GetSource() *string</a></li>
+          <li><a href="#ModificationValue.GetSynonyms">func (mv *ModificationValue) GetSynonyms() []string</a></li>
+          <li><a href="#ModificationValue.IsAmbiguityRef">func (mv *ModificationValue) IsAmbiguityRef() bool</a></li>
+          <li><a href="#ModificationValue.IsBranch">func (mv *ModificationValue) IsBranch() bool</a></li>
+          <li><a href="#ModificationValue.IsBranchRef">func (mv *ModificationValue) IsBranchRef() bool</a></li>
+          <li><a href="#ModificationValue.IsCrosslinkRef">func (mv *ModificationValue) IsCrosslinkRef() bool</a></li>
+          <li><a href="#ModificationValue.Len">func (mv *ModificationValue) Len() int</a></li>
+          <li><a href="#ModificationValue.ToString">func (mv *ModificationValue) ToString() string</a></li>
+          </ul>
+      </li>
+  <li>
+      <a href="#ParseProFormaResult">type ParseProFormaResult</a>
+      <ul>
+          <li><a href="#ParseProFormaDetailed">func ParseProFormaDetailed(proformaStr string) (*ParseProFormaResult, error)</a></li>
+          </ul>
+      </li>
+  <li>
+      <a href="#PipeValue">type PipeValue</a>
+      <ul>
+          <li><a href="#NewPipeValue">func NewPipeValue(value string, valueType PipeValueType, originalValue string) *PipeValue</a></li>
+          <li><a href="#PipeValue.AssignType">func (pv *PipeValue) AssignType(valueType PipeValueType)</a></li>
+          <li><a href="#PipeValue.GetAmbiguityGroup">func (pv *PipeValue) GetAmbiguityGroup() *string</a></li>
+          <li><a href="#PipeValue.GetCharge">func (pv *PipeValue) GetCharge() *string</a></li>
+          <li><a href="#PipeValue.GetChargeValue">func (pv *PipeValue) GetChargeValue() *int</a></li>
+          <li><a href="#PipeValue.GetCrosslinkID">func (pv *PipeValue) GetCrosslinkID() *string</a></li>
+          <li><a href="#PipeValue.GetLocalizationScore">func (pv *PipeValue) GetLocalizationScore() *float64</a></li>
+          <li><a href="#PipeValue.GetMass">func (pv *PipeValue) GetMass() *float64</a></li>
+          <li><a href="#PipeValue.GetObservedMass">func (pv *PipeValue) GetObservedMass() *float64</a></li>
+          <li><a href="#PipeValue.GetSource">func (pv *PipeValue) GetSource() *string</a></li>
+          <li><a href="#PipeValue.GetType">func (pv *PipeValue) GetType() PipeValueType</a></li>
+          <li><a href="#PipeValue.GetValue">func (pv *PipeValue) GetValue() string</a></li>
+          <li><a href="#PipeValue.IsAmbiguityRef">func (pv *PipeValue) IsAmbiguityRef() bool</a></li>
+          <li><a href="#PipeValue.IsBranch">func (pv *PipeValue) IsBranch() bool</a></li>
+          <li><a href="#PipeValue.IsBranchRef">func (pv *PipeValue) IsBranchRef() bool</a></li>
+          <li><a href="#PipeValue.IsCrosslinkRef">func (pv *PipeValue) IsCrosslinkRef() bool</a></li>
+          <li><a href="#PipeValue.IsValidFormula">func (pv *PipeValue) IsValidFormula() bool</a></li>
+          <li><a href="#PipeValue.IsValidGlycan">func (pv *PipeValue) IsValidGlycan() bool</a></li>
+          <li><a href="#PipeValue.SetMass">func (pv *PipeValue) SetMass(mass float64)</a></li>
+          <li><a href="#PipeValue.SetObservedMass">func (pv *PipeValue) SetObservedMass(mass float64)</a></li>
+          <li><a href="#PipeValue.SetSource">func (pv *PipeValue) SetSource(source string)</a></li>
+          <li><a href="#PipeValue.SetType">func (pv *PipeValue) SetType(valueType PipeValueType)</a></li>
+          <li><a href="#PipeValue.String">func (pv *PipeValue) String() string</a></li>
+          </ul>
+      </li>
+  <li>
+      <a href="#PipeValueType">type PipeValueType</a>
+      </li>
+  <li>
+      <a href="#ProFormaParser">type ProFormaParser</a>
+      <ul>
+          <li><a href="#NewProFormaParser">func NewProFormaParser() *ProFormaParser</a></li>
+          <li><a href="#ProFormaParser.Parse">func (p *ProFormaParser) Parse(proformaStr string) (string, map[string][]*Modification, []*GlobalModification, ...)</a></li>
+          </ul>
+      </li>
+  <li>
+      <a href="#Sequence">type Sequence</a>
+      <ul>
+          <li><a href="#FromProforma">func FromProforma(proformaStr string) (*Sequence, error)</a></li>
+          <li><a href="#NewSequence">func NewSequence(seq interface{}, mods map[int][]*Modification, parse bool, modPosition string, ...) *Sequence</a></li>
+          <li><a href="#Sequence.AddModifications">func (s *Sequence) AddModifications(modDict map[int][]*Modification)</a></li>
+          <li><a href="#Sequence.Count">func (s *Sequence) Count(char string, start, end int) int</a></li>
+          <li><a href="#Sequence.Equal">func (s *Sequence) Equal(other *Sequence) bool</a></li>
+          <li><a href="#Sequence.FindWithRegex">func (s *Sequence) FindWithRegex(motif string, ignore []bool) ([][]int, error)</a></li>
+          <li><a href="#Sequence.Gaps">func (s *Sequence) Gaps() []bool</a></li>
+          <li><a href="#Sequence.GetChains">func (s *Sequence) GetChains() []*Sequence</a></li>
+          <li><a href="#Sequence.GetCharge">func (s *Sequence) GetCharge() *int</a></li>
+          <li><a href="#Sequence.GetCompoundIonName">func (s *Sequence) GetCompoundIonName() *string</a></li>
+          <li><a href="#Sequence.GetGlobalMods">func (s *Sequence) GetGlobalMods() []*GlobalModification</a></li>
+          <li><a href="#Sequence.GetIonicSpecies">func (s *Sequence) GetIonicSpecies() *string</a></li>
+          <li><a href="#Sequence.GetItem">func (s *Sequence) GetItem(key interface{}) interface{}</a></li>
+          <li><a href="#Sequence.GetLength">func (s *Sequence) GetLength() int</a></li>
+          <li><a href="#Sequence.GetMods">func (s *Sequence) GetMods() map[int][]*Modification</a></li>
+          <li><a href="#Sequence.GetPeptidoformIonName">func (s *Sequence) GetPeptidoformIonName() *string</a></li>
+          <li><a href="#Sequence.GetPeptidoformName">func (s *Sequence) GetPeptidoformName() *string</a></li>
+          <li><a href="#Sequence.GetPeptidoforms">func (s *Sequence) GetPeptidoforms() []*Sequence</a></li>
+          <li><a href="#Sequence.GetSeq">func (s *Sequence) GetSeq() []*AminoAcid</a></li>
+          <li><a href="#Sequence.GetSequenceAmbiguities">func (s *Sequence) GetSequenceAmbiguities() []*SequenceAmbiguity</a></li>
+          <li><a href="#Sequence.IsChimeric">func (s *Sequence) IsChimeric() bool</a></li>
+          <li><a href="#Sequence.IsMultiChain">func (s *Sequence) IsMultiChain() bool</a></li>
+          <li><a href="#Sequence.SetCharge">func (s *Sequence) SetCharge(charge *int)</a></li>
+          <li><a href="#Sequence.SetIonicSpecies">func (s *Sequence) SetIonicSpecies(species *string)</a></li>
+          <li><a href="#Sequence.String">func (s *Sequence) String() string</a></li>
+          <li><a href="#Sequence.ToMap">func (s *Sequence) ToMap() map[string]interface{}</a></li>
+          <li><a href="#Sequence.ToProforma">func (s *Sequence) ToProforma() string</a></li>
+          <li><a href="#Sequence.ToStrippedString">func (s *Sequence) ToStrippedString() string</a></li>
+          </ul>
+      </li>
+  <li>
+      <a href="#SequenceAmbiguity">type SequenceAmbiguity</a>
+      <ul>
+          <li><a href="#NewSequenceAmbiguity">func NewSequenceAmbiguity(value string, position int) *SequenceAmbiguity</a></li>
+          <li><a href="#SequenceAmbiguity.GetPosition">func (sa *SequenceAmbiguity) GetPosition() int</a></li>
+          <li><a href="#SequenceAmbiguity.GetValue">func (sa *SequenceAmbiguity) GetValue() string</a></li>
+          <li><a href="#SequenceAmbiguity.String">func (sa *SequenceAmbiguity) String() string</a></li>
+          </ul>
+      </li>
+  <li>
+      <a href="#SequenceBlock">type SequenceBlock</a>
+      </li>
+  </ul><h3 id="pkg-constants">Constants</h3>
+  <pre class="chroma"><span class="kd">const</span> <span class="p">(</span>
+	<span id="Proton"><span class="nx">Proton</span></span> <span class="p">=</span> <span class="mf">1.007277</span>
+	<span id="H"><span class="nx">H</span></span>      <span class="p">=</span> <span class="mf">1.007825</span>
+	<span id="O"><span class="nx">O</span></span>      <span class="p">=</span> <span class="mf">15.99491463</span>
+<span class="p">)</span></pre>
+  <p>Atomic mass constants
+<h3 id="pkg-variables">Variables</h3>
+  <pre class="chroma"><span class="kd">var</span> <span id="AAMass"><span class="nx">AAMass</span></span> <span class="p">=</span> <span class="kd">map</span><span class="p">[</span><a href="https://pkg.go.dev/builtin#string"><span class="kt">string</span></a><span class="p">]</span><a href="https://pkg.go.dev/builtin#float64"><span class="kt">float64</span></a><span class="p">{</span>
+	<span class="s">&#34;A&#34;</span><span class="p">:</span> <span class="mf">71.037114</span><span class="p">,</span>
+	<span class="s">&#34;R&#34;</span><span class="p">:</span> <span class="mf">156.101111</span><span class="p">,</span>
+	<span class="s">&#34;N&#34;</span><span class="p">:</span> <span class="mf">114.042927</span><span class="p">,</span>
+	<span class="s">&#34;D&#34;</span><span class="p">:</span> <span class="mf">115.026943</span><span class="p">,</span>
+	<span class="s">&#34;C&#34;</span><span class="p">:</span> <span class="mf">103.009185</span><span class="p">,</span>
+	<span class="s">&#34;E&#34;</span><span class="p">:</span> <span class="mf">129.042593</span><span class="p">,</span>
+	<span class="s">&#34;Q&#34;</span><span class="p">:</span> <span class="mf">128.058578</span><span class="p">,</span>
+	<span class="s">&#34;G&#34;</span><span class="p">:</span> <span class="mf">57.021464</span><span class="p">,</span>
+	<span class="s">&#34;H&#34;</span><span class="p">:</span> <span class="mf">137.058912</span><span class="p">,</span>
+	<span class="s">&#34;I&#34;</span><span class="p">:</span> <span class="mf">113.084064</span><span class="p">,</span>
+	<span class="s">&#34;L&#34;</span><span class="p">:</span> <span class="mf">113.084064</span><span class="p">,</span>
+	<span class="s">&#34;K&#34;</span><span class="p">:</span> <span class="mf">128.094963</span><span class="p">,</span>
+	<span class="s">&#34;M&#34;</span><span class="p">:</span> <span class="mf">131.040485</span><span class="p">,</span>
+	<span class="s">&#34;F&#34;</span><span class="p">:</span> <span class="mf">147.068414</span><span class="p">,</span>
+	<span class="s">&#34;P&#34;</span><span class="p">:</span> <span class="mf">97.052764</span><span class="p">,</span>
+	<span class="s">&#34;S&#34;</span><span class="p">:</span> <span class="mf">87.032028</span><span class="p">,</span>
+	<span class="s">&#34;T&#34;</span><span class="p">:</span> <span class="mf">101.047679</span><span class="p">,</span>
+	<span class="s">&#34;W&#34;</span><span class="p">:</span> <span class="mf">186.079313</span><span class="p">,</span>
+	<span class="s">&#34;Y&#34;</span><span class="p">:</span> <span class="mf">163.06332</span><span class="p">,</span>
+	<span class="s">&#34;V&#34;</span><span class="p">:</span> <span class="mf">99.068414</span><span class="p">,</span>
+	<span class="s">&#34;X&#34;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+	<span class="s">&#34;O&#34;</span><span class="p">:</span> <span class="mf">150.03794</span><span class="p">,</span>
+	<span class="s">&#34;U&#34;</span><span class="p">:</span> <span class="mf">255.15829</span><span class="p">,</span>
+<span class="p">}</span></pre>
+  <p>AAMass maps amino acid one-letter codes to their masses
+<pre class="chroma"><span class="kd">var</span> <span id="GlycanBlockDict"><span class="nx">GlycanBlockDict</span></span> <span class="p">=</span> <span class="kd">map</span><span class="p">[</span><a href="https://pkg.go.dev/builtin#string"><span class="kt">string</span></a><span class="p">]</span><a href="https://pkg.go.dev/builtin#float64"><span class="kt">float64</span></a><span class="p">{</span>
+	<span class="s">&#34;HexNAc&#34;</span><span class="p">:</span>  <span class="mf">203.079372520</span><span class="p">,</span>
+	<span class="s">&#34;Hex&#34;</span><span class="p">:</span>     <span class="mf">162.0528234185</span><span class="p">,</span>
+	<span class="s">&#34;Fuc&#34;</span><span class="p">:</span>     <span class="mf">146.057908799</span><span class="p">,</span>
+	<span class="s">&#34;NeuAc&#34;</span><span class="p">:</span>   <span class="mf">291.0954165066</span><span class="p">,</span>
+	<span class="s">&#34;Sulfo&#34;</span><span class="p">:</span>   <span class="mf">79.9568148602</span><span class="p">,</span>
+	<span class="s">&#34;Phospho&#34;</span><span class="p">:</span> <span class="mf">79.9663305228</span><span class="p">,</span>
+	<span class="s">&#34;Pent&#34;</span><span class="p">:</span>    <span class="mf">132.0422587348</span><span class="p">,</span>
+	<span class="s">&#34;NeuGc&#34;</span><span class="p">:</span>   <span class="mf">307.0903311261</span><span class="p">,</span>
+<span class="p">}</span></pre>
+  <p>GlycanBlockDict maps glycan block names to their masses
+<pre class="chroma"><span class="kd">var</span> <span id="KnownSources"><span class="nx">KnownSources</span></span> <span class="p">=</span> <span class="kd">map</span><span class="p">[</span><a href="https://pkg.go.dev/builtin#string"><span class="kt">string</span></a><span class="p">]</span><a href="https://pkg.go.dev/builtin#bool"><span class="kt">bool</span></a><span class="p">{</span>
+	<span class="s">&#34;Unimod&#34;</span><span class="p">:</span> <a href="https://pkg.go.dev/builtin#true"><span class="kc">true</span></a><span class="p">,</span> <span class="s">&#34;U&#34;</span><span class="p">:</span> <a href="https://pkg.go.dev/builtin#true"><span class="kc">true</span></a><span class="p">,</span> <span class="s">&#34;PSI-MOD&#34;</span><span class="p">:</span> <a href="https://pkg.go.dev/builtin#true"><span class="kc">true</span></a><span class="p">,</span> <span class="s">&#34;M&#34;</span><span class="p">:</span> <a href="https://pkg.go.dev/builtin#true"><span class="kc">true</span></a><span class="p">,</span>
+	<span class="s">&#34;RESID&#34;</span><span class="p">:</span> <a href="https://pkg.go.dev/builtin#true"><span class="kc">true</span></a><span class="p">,</span> <span class="s">&#34;R&#34;</span><span class="p">:</span> <a href="https://pkg.go.dev/builtin#true"><span class="kc">true</span></a><span class="p">,</span> <span class="s">&#34;XL-MOD&#34;</span><span class="p">:</span> <a href="https://pkg.go.dev/builtin#true"><span class="kc">true</span></a><span class="p">,</span> <span class="s">&#34;X&#34;</span><span class="p">:</span> <a href="https://pkg.go.dev/builtin#true"><span class="kc">true</span></a><span class="p">,</span>
+	<span class="s">&#34;XLMOD&#34;</span><span class="p">:</span> <a href="https://pkg.go.dev/builtin#true"><span class="kc">true</span></a><span class="p">,</span> <span class="s">&#34;GNO&#34;</span><span class="p">:</span> <a href="https://pkg.go.dev/builtin#true"><span class="kc">true</span></a><span class="p">,</span> <span class="s">&#34;G&#34;</span><span class="p">:</span> <a href="https://pkg.go.dev/builtin#true"><span class="kc">true</span></a><span class="p">,</span> <span class="s">&#34;MOD&#34;</span><span class="p">:</span> <a href="https://pkg.go.dev/builtin#true"><span class="kc">true</span></a><span class="p">,</span>
+	<span class="s">&#34;Obs&#34;</span><span class="p">:</span> <a href="https://pkg.go.dev/builtin#true"><span class="kc">true</span></a><span class="p">,</span> <span class="s">&#34;Formula&#34;</span><span class="p">:</span> <a href="https://pkg.go.dev/builtin#true"><span class="kc">true</span></a><span class="p">,</span> <span class="s">&#34;FORMULA&#34;</span><span class="p">:</span> <a href="https://pkg.go.dev/builtin#true"><span class="kc">true</span></a><span class="p">,</span> <span class="s">&#34;GLYCAN&#34;</span><span class="p">:</span> <a href="https://pkg.go.dev/builtin#true"><span class="kc">true</span></a><span class="p">,</span>
+	<span class="s">&#34;Glycan&#34;</span><span class="p">:</span> <a href="https://pkg.go.dev/builtin#true"><span class="kc">true</span></a><span class="p">,</span> <span class="s">&#34;Info&#34;</span><span class="p">:</span> <a href="https://pkg.go.dev/builtin#true"><span class="kc">true</span></a><span class="p">,</span> <span class="s">&#34;INFO&#34;</span><span class="p">:</span> <a href="https://pkg.go.dev/builtin#true"><span class="kc">true</span></a><span class="p">,</span> <span class="s">&#34;OBS&#34;</span><span class="p">:</span> <a href="https://pkg.go.dev/builtin#true"><span class="kc">true</span></a><span class="p">,</span>
+	<span class="s">&#34;XL&#34;</span><span class="p">:</span> <a href="https://pkg.go.dev/builtin#true"><span class="kc">true</span></a><span class="p">,</span>
+<span class="p">}</span></pre>
+  <p>KnownSources is a set of recognized modification source databases
+<pre class="chroma"><span class="kd">var</span> <span id="Monosaccharides"><span class="nx">Monosaccharides</span></span> <span class="p">=</span> <span class="kd">map</span><span class="p">[</span><a href="https://pkg.go.dev/builtin#string"><span class="kt">string</span></a><span class="p">]</span><a href="https://pkg.go.dev/builtin#bool"><span class="kt">bool</span></a><span class="p">{</span>
+	<span class="s">&#34;Hex&#34;</span><span class="p">:</span>     <a href="https://pkg.go.dev/builtin#true"><span class="kc">true</span></a><span class="p">,</span>
+	<span class="s">&#34;HexNAc&#34;</span><span class="p">:</span>  <a href="https://pkg.go.dev/builtin#true"><span class="kc">true</span></a><span class="p">,</span>
+	<span class="s">&#34;HexS&#34;</span><span class="p">:</span>    <a href="https://pkg.go.dev/builtin#true"><span class="kc">true</span></a><span class="p">,</span>
+	<span class="s">&#34;HexP&#34;</span><span class="p">:</span>    <a href="https://pkg.go.dev/builtin#true"><span class="kc">true</span></a><span class="p">,</span>
+	<span class="s">&#34;HexNAcS&#34;</span><span class="p">:</span> <a href="https://pkg.go.dev/builtin#true"><span class="kc">true</span></a><span class="p">,</span>
+	<span class="s">&#34;dHex&#34;</span><span class="p">:</span>    <a href="https://pkg.go.dev/builtin#true"><span class="kc">true</span></a><span class="p">,</span>
+	<span class="s">&#34;NeuAc&#34;</span><span class="p">:</span>   <a href="https://pkg.go.dev/builtin#true"><span class="kc">true</span></a><span class="p">,</span>
+	<span class="s">&#34;NeuGc&#34;</span><span class="p">:</span>   <a href="https://pkg.go.dev/builtin#true"><span class="kc">true</span></a><span class="p">,</span>
+	<span class="s">&#34;Pen&#34;</span><span class="p">:</span>     <a href="https://pkg.go.dev/builtin#true"><span class="kc">true</span></a><span class="p">,</span>
+	<span class="s">&#34;Fuc&#34;</span><span class="p">:</span>     <a href="https://pkg.go.dev/builtin#true"><span class="kc">true</span></a><span class="p">,</span>
+<span class="p">}</span></pre>
+  <p>Monosaccharides is a set of known monosaccharide names
+In Go, we represent sets as maps with bool values
+<h3 id="pkg-functions">Functions</h3>
+  <h3 id="CalculateHashCode">func CalculateHashCode</h3>
+    <pre class="chroma"><span class="kd">func</span> <span class="nf">CalculateHashCode</span><span class="p">(</span><span class="nx">input</span> <a href="https://pkg.go.dev/builtin#string"><span class="kt">string</span></a><span class="p">)</span> <a href="https://pkg.go.dev/builtin#int32"><span class="kt">int32</span></a></pre>
+    <p>CalculateHashCode computes a hash code for a string (similar to TypeScript implementation)
+<h3 id="CountUniqueElements">func CountUniqueElements</h3>
+    <pre class="chroma"><span class="kd">func</span> <span class="nf">CountUniqueElements</span><span class="p">(</span><span class="nx">seq</span> <span class="p">[]</span><a href="#BaseBlock"><span class="nx">BaseBlock</span></a><span class="p">)</span> <span class="kd">map</span><span class="p">[</span><a href="https://pkg.go.dev/builtin#string"><span class="kt">string</span></a><span class="p">]</span><a href="https://pkg.go.dev/builtin#int"><span class="kt">int</span></a></pre>
+    <p>CountUniqueElements counts unique elements in a sequence of BaseBlock objects
+<h3 id="Float64Ptr">func Float64Ptr</h3>
+    <pre class="chroma"><span class="kd">func</span> <span class="nf">Float64Ptr</span><span class="p">(</span><span class="nx">v</span> <a href="https://pkg.go.dev/builtin#float64"><span class="kt">float64</span></a><span class="p">)</span> <span class="o">*</span><a href="https://pkg.go.dev/builtin#float64"><span class="kt">float64</span></a></pre>
+    <p>Float64Ptr returns a pointer to a float64 value
+<h3 id="Float64Value">func Float64Value</h3>
+    <pre class="chroma"><span class="kd">func</span> <span class="nf">Float64Value</span><span class="p">(</span><span class="nx">ptr</span> <span class="o">*</span><a href="https://pkg.go.dev/builtin#float64"><span class="kt">float64</span></a><span class="p">)</span> <a href="https://pkg.go.dev/builtin#float64"><span class="kt">float64</span></a></pre>
+    <p>Float64Value safely dereferences a float64 pointer, returning 0.0 if nil
+<h3 id="IntPtr">func IntPtr</h3>
+    <pre class="chroma"><span class="kd">func</span> <span class="nf">IntPtr</span><span class="p">(</span><span class="nx">v</span> <a href="https://pkg.go.dev/builtin#int"><span class="kt">int</span></a><span class="p">)</span> <span class="o">*</span><a href="https://pkg.go.dev/builtin#int"><span class="kt">int</span></a></pre>
+    <p>IntPtr returns a pointer to an int value
+<h3 id="IntValue">func IntValue</h3>
+    <pre class="chroma"><span class="kd">func</span> <span class="nf">IntValue</span><span class="p">(</span><span class="nx">ptr</span> <span class="o">*</span><a href="https://pkg.go.dev/builtin#int"><span class="kt">int</span></a><span class="p">)</span> <a href="https://pkg.go.dev/builtin#int"><span class="kt">int</span></a></pre>
+    <p>IntValue safely dereferences an int pointer, returning 0 if nil
+<h3 id="OrderedSerializePositionDict">func OrderedSerializePositionDict</h3>
+    <pre class="chroma"><span class="kd">func</span> <span class="nf">OrderedSerializePositionDict</span><span class="p">(</span><span class="nx">positions</span> <span class="kd">map</span><span class="p">[</span><a href="https://pkg.go.dev/builtin#int"><span class="kt">int</span></a><span class="p">]</span><span class="kd">interface</span><span class="p">{})</span> <span class="p">(</span><a href="https://pkg.go.dev/builtin#string"><span class="kt">string</span></a><span class="p">,</span> <a href="https://pkg.go.dev/builtin#error"><span class="kt">error</span></a><span class="p">)</span></pre>
+    <p>OrderedSerializePositionDict serializes a dictionary of positions with consistent ordering
+<h3 id="ParseProForma">func ParseProForma</h3>
+    <pre class="chroma"><span class="kd">func</span> <span class="nf">ParseProForma</span><span class="p">(</span><span class="nx">proformaStr</span> <a href="https://pkg.go.dev/builtin#string"><span class="kt">string</span></a><span class="p">)</span> <span class="p">(</span><a href="https://pkg.go.dev/builtin#string"><span class="kt">string</span></a><span class="p">,</span> <span class="kd">map</span><span class="p">[</span><a href="https://pkg.go.dev/builtin#string"><span class="kt">string</span></a><span class="p">][]</span><span class="o">*</span><a href="#Modification"><span class="nx">Modification</span></a><span class="p">,</span> <span class="p">[]</span><span class="o">*</span><a href="#GlobalModification"><span class="nx">GlobalModification</span></a><span class="p">,</span> <span class="p">[]</span><span class="o">*</span><a href="#SequenceAmbiguity"><span class="nx">SequenceAmbiguity</span></a><span class="p">,</span> <span class="p">[]</span><span class="o">*</span><a href="https://pkg.go.dev/builtin#int"><span class="kt">int</span></a><span class="p">,</span> <a href="https://pkg.go.dev/builtin#error"><span class="kt">error</span></a><span class="p">)</span></pre>
+    <p>ParseProForma parses a ProForma string and returns its basic components.
+This is a convenience function that creates a parser and calls Parse.
+<h3 id="SplitChimericProforma">func SplitChimericProforma</h3>
+    <pre class="chroma"><span class="kd">func</span> <span class="nf">SplitChimericProforma</span><span class="p">(</span><span class="nx">proformaStr</span> <a href="https://pkg.go.dev/builtin#string"><span class="kt">string</span></a><span class="p">)</span> <span class="p">[]</span><a href="https://pkg.go.dev/builtin#string"><span class="kt">string</span></a></pre>
+    <p>SplitChimericProforma splits a chimeric ProForma string into individual peptidoforms
+<h3 id="StringPtr">func StringPtr</h3>
+    <pre class="chroma"><span class="kd">func</span> <span class="nf">StringPtr</span><span class="p">(</span><span class="nx">v</span> <a href="https://pkg.go.dev/builtin#string"><span class="kt">string</span></a><span class="p">)</span> <span class="o">*</span><a href="https://pkg.go.dev/builtin#string"><span class="kt">string</span></a></pre>
+    <p>StringPtr returns a pointer to a string value
+<h3 id="StringValue">func StringValue</h3>
+    <pre class="chroma"><span class="kd">func</span> <span class="nf">StringValue</span><span class="p">(</span><span class="nx">ptr</span> <span class="o">*</span><a href="https://pkg.go.dev/builtin#string"><span class="kt">string</span></a><span class="p">)</span> <a href="https://pkg.go.dev/builtin#string"><span class="kt">string</span></a></pre>
+    <p>StringValue safely dereferences a string pointer, returning empty string if nil
+<h3 id="VariablePositionPlacementGenerator">func VariablePositionPlacementGenerator</h3>
+    <pre class="chroma"><span class="kd">func</span> <span class="nf">VariablePositionPlacementGenerator</span><span class="p">(</span><span class="nx">positions</span> <span class="p">[]</span><a href="https://pkg.go.dev/builtin#int"><span class="kt">int</span></a><span class="p">)</span> <span class="p">[][]</span><a href="https://pkg.go.dev/builtin#int"><span class="kt">int</span></a></pre>
+    <p>VariablePositionPlacementGenerator generates all possible position combinations for modifications
+<h3 id="pkg-types">Types</h3>
+  <h3 id="AminoAcid">type AminoAcid</h3>
+    <pre class="chroma"><span class="kd">type</span> <span class="nx">AminoAcid</span> <span class="kd">struct</span> <span class="p">{</span>
+	<a href="#BaseBlock"><span class="nx">BaseBlock</span></a>
+	<span class="c1">// contains filtered or unexported fields</span>
+<span class="p">}</span></pre>
+    <p>AminoAcid represents an amino acid residue with its position, modifications, and mass properties.
+It embeds BaseBlock to inherit common functionality and maintains a list of modifications
+that can be applied to the residue.
+<h4 id="NewAminoAcid">func NewAminoAcid</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="nf">NewAminoAcid</span><span class="p">(</span><span class="nx">value</span> <a href="https://pkg.go.dev/builtin#string"><span class="kt">string</span></a><span class="p">,</span> <span class="nx">position</span> <span class="o">*</span><a href="https://pkg.go.dev/builtin#int"><span class="kt">int</span></a><span class="p">,</span> <span class="nx">mass</span> <span class="o">*</span><a href="https://pkg.go.dev/builtin#float64"><span class="kt">float64</span></a><span class="p">)</span> <span class="p">(</span><span class="o">*</span><a href="#AminoAcid"><span class="nx">AminoAcid</span></a><span class="p">,</span> <a href="https://pkg.go.dev/builtin#error"><span class="kt">error</span></a><span class="p">)</span></pre>
+  <p>NewAminoAcid creates a new AminoAcid instance with the specified value, position, and optional mass.
+If the amino acid is not recognized and no mass is provided, it returns an error.
+The mass parameter overrides the default mass for known amino acids.
+<h4 id="AminoAcid.AddModification">func (*AminoAcid) AddModification</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">aa</span> <span class="o">*</span><a href="#AminoAcid"><span class="nx">AminoAcid</span></a><span class="p">)</span> <span class="nf">AddModification</span><span class="p">(</span><span class="nx">mod</span> <span class="o">*</span><a href="#Modification"><span class="nx">Modification</span></a><span class="p">)</span></pre>
+  <p>AddModification appends a modification to this amino acid&apos;s modification list.
+<h4 id="AminoAcid.Equal">func (*AminoAcid) Equal</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">aa</span> <span class="o">*</span><a href="#AminoAcid"><span class="nx">AminoAcid</span></a><span class="p">)</span> <span class="nf">Equal</span><span class="p">(</span><span class="nx">other</span> <a href="#BaseBlock"><span class="nx">BaseBlock</span></a><span class="p">)</span> <a href="https://pkg.go.dev/builtin#bool"><span class="kt">bool</span></a></pre>
+  <p>Equal compares two amino acids for equality including their modifications.
+Returns true if both amino acids have the same value, position, mass, and modifications.
+<h4 id="AminoAcid.GetMods">func (*AminoAcid) GetMods</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">aa</span> <span class="o">*</span><a href="#AminoAcid"><span class="nx">AminoAcid</span></a><span class="p">)</span> <span class="nf">GetMods</span><span class="p">()</span> <span class="p">[]</span><span class="o">*</span><a href="#Modification"><span class="nx">Modification</span></a></pre>
+  <p>GetMods returns a copy of the modifications list to prevent external mutation.
+<h4 id="AminoAcid.GetTotalMass">func (*AminoAcid) GetTotalMass</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">aa</span> <span class="o">*</span><a href="#AminoAcid"><span class="nx">AminoAcid</span></a><span class="p">)</span> <span class="nf">GetTotalMass</span><span class="p">()</span> <a href="https://pkg.go.dev/builtin#float64"><span class="kt">float64</span></a></pre>
+  <p>GetTotalMass calculates the total mass of the amino acid including all modifications.
+Returns 0 if the base mass is not set.
+<h4 id="AminoAcid.HasModification">func (*AminoAcid) HasModification</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">aa</span> <span class="o">*</span><a href="#AminoAcid"><span class="nx">AminoAcid</span></a><span class="p">)</span> <span class="nf">HasModification</span><span class="p">(</span><span class="nx">mod</span> <span class="kd">interface</span><span class="p">{})</span> <a href="https://pkg.go.dev/builtin#bool"><span class="kt">bool</span></a></pre>
+  <p>HasModification checks if this amino acid has a specific modification.
+The mod parameter can be either a string (modification value) or a *Modification instance.
+<h4 id="AminoAcid.Hash">func (*AminoAcid) Hash</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">aa</span> <span class="o">*</span><a href="#AminoAcid"><span class="nx">AminoAcid</span></a><span class="p">)</span> <span class="nf">Hash</span><span class="p">()</span> <span class="p">(</span><a href="https://pkg.go.dev/builtin#string"><span class="kt">string</span></a><span class="p">,</span> <a href="https://pkg.go.dev/builtin#error"><span class="kt">error</span></a><span class="p">)</span></pre>
+  <p>Hash generates a SHA-256 hash for the amino acid including all modifications.
+The hash is computed from the JSON representation of the amino acid&apos;s map.
+<h4 id="AminoAcid.RemoveModification">func (*AminoAcid) RemoveModification</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">aa</span> <span class="o">*</span><a href="#AminoAcid"><span class="nx">AminoAcid</span></a><span class="p">)</span> <span class="nf">RemoveModification</span><span class="p">(</span><span class="nx">mod</span> <span class="kd">interface</span><span class="p">{})</span> <a href="https://pkg.go.dev/builtin#bool"><span class="kt">bool</span></a></pre>
+  <p>RemoveModification removes a modification from this amino acid.
+The mod parameter can be either a string (modification value) or a *Modification instance.
+Returns true if a modification was removed, false otherwise.
+<h4 id="AminoAcid.SetModification">func (*AminoAcid) SetModification</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">aa</span> <span class="o">*</span><a href="#AminoAcid"><span class="nx">AminoAcid</span></a><span class="p">)</span> <span class="nf">SetModification</span><span class="p">(</span><span class="nx">mod</span> <span class="o">*</span><a href="#Modification"><span class="nx">Modification</span></a><span class="p">)</span></pre>
+  <p>SetModification adds a modification to this amino acid.
+This is a legacy method that calls AddModification for backward compatibility.
+<h4 id="AminoAcid.String">func (*AminoAcid) String</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">aa</span> <span class="o">*</span><a href="#AminoAcid"><span class="nx">AminoAcid</span></a><span class="p">)</span> <span class="nf">String</span><span class="p">()</span> <a href="https://pkg.go.dev/builtin#string"><span class="kt">string</span></a></pre>
+  <p>String returns a string representation of the amino acid with its modifications
+in ProForma-like notation (e.g., &quot;S[Phospho]&quot;).
+<h4 id="AminoAcid.ToDebugString">func (*AminoAcid) ToDebugString</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">aa</span> <span class="o">*</span><a href="#AminoAcid"><span class="nx">AminoAcid</span></a><span class="p">)</span> <span class="nf">ToDebugString</span><span class="p">()</span> <a href="https://pkg.go.dev/builtin#string"><span class="kt">string</span></a></pre>
+  <p>ToDebugString returns a detailed string representation suitable for debugging.
+Includes the amino acid value, position, and all modifications.
+<h4 id="AminoAcid.ToMap">func (*AminoAcid) ToMap</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">aa</span> <span class="o">*</span><a href="#AminoAcid"><span class="nx">AminoAcid</span></a><span class="p">)</span> <span class="nf">ToMap</span><span class="p">()</span> <span class="kd">map</span><span class="p">[</span><a href="https://pkg.go.dev/builtin#string"><span class="kt">string</span></a><span class="p">]</span><span class="kd">interface</span><span class="p">{}</span></pre>
+  <p>ToMap converts the amino acid to a map representation suitable for serialization.
+Includes base block properties, modifications, and total mass.
+<h3 id="BaseBlock">type BaseBlock</h3>
+    <pre class="chroma"><span class="kd">type</span> <span class="nx">BaseBlock</span> <span class="kd">interface</span> <span class="p">{</span>
+	<span id="BaseBlock.GetValue"><span class="nf">GetValue</span></span><span class="p">()</span> <a href="https://pkg.go.dev/builtin#string"><span class="kt">string</span></a>
+	<span id="BaseBlock.GetPosition"><span class="nf">GetPosition</span></span><span class="p">()</span> <span class="o">*</span><a href="https://pkg.go.dev/builtin#int"><span class="kt">int</span></a>
+	<span id="BaseBlock.SetPosition"><span class="nf">SetPosition</span></span><span class="p">(</span><span class="nx">position</span> <span class="o">*</span><a href="https://pkg.go.dev/builtin#int"><span class="kt">int</span></a><span class="p">)</span>
+	<span id="BaseBlock.IsBranch"><span class="nf">IsBranch</span></span><span class="p">()</span> <a href="https://pkg.go.dev/builtin#bool"><span class="kt">bool</span></a>
+	<span id="BaseBlock.GetMass"><span class="nf">GetMass</span></span><span class="p">()</span> <span class="o">*</span><a href="https://pkg.go.dev/builtin#float64"><span class="kt">float64</span></a>
+	<span id="BaseBlock.SetMass"><span class="nf">SetMass</span></span><span class="p">(</span><span class="nx">mass</span> <span class="o">*</span><a href="https://pkg.go.dev/builtin#float64"><span class="kt">float64</span></a><span class="p">)</span>
+	<span id="BaseBlock.GetExtra"><span class="nf">GetExtra</span></span><span class="p">()</span> <span class="kd">interface</span><span class="p">{}</span>
+	<span id="BaseBlock.SetExtra"><span class="nf">SetExtra</span></span><span class="p">(</span><span class="nx">value</span> <span class="kd">interface</span><span class="p">{})</span>
+	<span id="BaseBlock.ToMap"><span class="nf">ToMap</span></span><span class="p">()</span> <span class="kd">map</span><span class="p">[</span><a href="https://pkg.go.dev/builtin#string"><span class="kt">string</span></a><span class="p">]</span><span class="kd">interface</span><span class="p">{}</span>
+	<span id="BaseBlock.String"><span class="nf">String</span></span><span class="p">()</span> <a href="https://pkg.go.dev/builtin#string"><span class="kt">string</span></a>
+	<span id="BaseBlock.Equal"><span class="nf">Equal</span></span><span class="p">(</span><span class="nx">other</span> <a href="#BaseBlock"><span class="nx">BaseBlock</span></a><span class="p">)</span> <a href="https://pkg.go.dev/builtin#bool"><span class="kt">bool</span></a>
+	<span id="BaseBlock.Hash"><span class="nf">Hash</span></span><span class="p">()</span> <span class="p">(</span><a href="https://pkg.go.dev/builtin#string"><span class="kt">string</span></a><span class="p">,</span> <a href="https://pkg.go.dev/builtin#error"><span class="kt">error</span></a><span class="p">)</span>
+<span class="p">}</span></pre>
+    <p>BaseBlock represents a biochemical building block with position and mass properties.
+This is the base interface for components like amino acids, modifications, etc.
+<h3 id="BaseBlockImpl">type BaseBlockImpl</h3>
+    <pre class="chroma"><span class="kd">type</span> <span class="nx">BaseBlockImpl</span> <span class="kd">struct</span> <span class="p">{</span>
+	<span class="c1">// contains filtered or unexported fields</span>
+<span class="p">}</span></pre>
+    <p>BaseBlockImpl provides a concrete implementation of the BaseBlock interface
+<h4 id="NewBaseBlock">func NewBaseBlock</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="nf">NewBaseBlock</span><span class="p">(</span><span class="nx">value</span> <a href="https://pkg.go.dev/builtin#string"><span class="kt">string</span></a><span class="p">,</span> <span class="nx">position</span> <span class="o">*</span><a href="https://pkg.go.dev/builtin#int"><span class="kt">int</span></a><span class="p">,</span> <span class="nx">branch</span> <a href="https://pkg.go.dev/builtin#bool"><span class="kt">bool</span></a><span class="p">,</span> <span class="nx">mass</span> <span class="o">*</span><a href="https://pkg.go.dev/builtin#float64"><span class="kt">float64</span></a><span class="p">)</span> <span class="o">*</span><a href="#BaseBlockImpl"><span class="nx">BaseBlockImpl</span></a></pre>
+  <p>NewBaseBlock creates a new BaseBlock instance
+<h4 id="BaseBlockImpl.Equal">func (*BaseBlockImpl) Equal</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">b</span> <span class="o">*</span><a href="#BaseBlockImpl"><span class="nx">BaseBlockImpl</span></a><span class="p">)</span> <span class="nf">Equal</span><span class="p">(</span><span class="nx">other</span> <a href="#BaseBlock"><span class="nx">BaseBlock</span></a><span class="p">)</span> <a href="https://pkg.go.dev/builtin#bool"><span class="kt">bool</span></a></pre>
+  <p>Equal checks if two blocks are equal
+<h4 id="BaseBlockImpl.GetExtra">func (*BaseBlockImpl) GetExtra</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">b</span> <span class="o">*</span><a href="#BaseBlockImpl"><span class="nx">BaseBlockImpl</span></a><span class="p">)</span> <span class="nf">GetExtra</span><span class="p">()</span> <span class="kd">interface</span><span class="p">{}</span></pre>
+  <p>GetExtra returns extra information associated with the block
+<h4 id="BaseBlockImpl.GetMass">func (*BaseBlockImpl) GetMass</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">b</span> <span class="o">*</span><a href="#BaseBlockImpl"><span class="nx">BaseBlockImpl</span></a><span class="p">)</span> <span class="nf">GetMass</span><span class="p">()</span> <span class="o">*</span><a href="https://pkg.go.dev/builtin#float64"><span class="kt">float64</span></a></pre>
+  <p>GetMass returns the mass of the block
+<h4 id="BaseBlockImpl.GetPosition">func (*BaseBlockImpl) GetPosition</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">b</span> <span class="o">*</span><a href="#BaseBlockImpl"><span class="nx">BaseBlockImpl</span></a><span class="p">)</span> <span class="nf">GetPosition</span><span class="p">()</span> <span class="o">*</span><a href="https://pkg.go.dev/builtin#int"><span class="kt">int</span></a></pre>
+  <p>GetPosition returns the position of the block
+<h4 id="BaseBlockImpl.GetValue">func (*BaseBlockImpl) GetValue</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">b</span> <span class="o">*</span><a href="#BaseBlockImpl"><span class="nx">BaseBlockImpl</span></a><span class="p">)</span> <span class="nf">GetValue</span><span class="p">()</span> <a href="https://pkg.go.dev/builtin#string"><span class="kt">string</span></a></pre>
+  <p>GetValue returns the identifier of the block
+<h4 id="BaseBlockImpl.Hash">func (*BaseBlockImpl) Hash</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">b</span> <span class="o">*</span><a href="#BaseBlockImpl"><span class="nx">BaseBlockImpl</span></a><span class="p">)</span> <span class="nf">Hash</span><span class="p">()</span> <span class="p">(</span><a href="https://pkg.go.dev/builtin#string"><span class="kt">string</span></a><span class="p">,</span> <a href="https://pkg.go.dev/builtin#error"><span class="kt">error</span></a><span class="p">)</span></pre>
+  <h4 id="BaseBlockImpl.IsBranch">func (*BaseBlockImpl) IsBranch</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">b</span> <span class="o">*</span><a href="#BaseBlockImpl"><span class="nx">BaseBlockImpl</span></a><span class="p">)</span> <span class="nf">IsBranch</span><span class="p">()</span> <a href="https://pkg.go.dev/builtin#bool"><span class="kt">bool</span></a></pre>
+  <p>IsBranch checks if the block is a branch
+<h4 id="BaseBlockImpl.SetExtra">func (*BaseBlockImpl) SetExtra</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">b</span> <span class="o">*</span><a href="#BaseBlockImpl"><span class="nx">BaseBlockImpl</span></a><span class="p">)</span> <span class="nf">SetExtra</span><span class="p">(</span><span class="nx">value</span> <span class="kd">interface</span><span class="p">{})</span></pre>
+  <p>SetExtra sets extra information for the block
+<h4 id="BaseBlockImpl.SetMass">func (*BaseBlockImpl) SetMass</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">b</span> <span class="o">*</span><a href="#BaseBlockImpl"><span class="nx">BaseBlockImpl</span></a><span class="p">)</span> <span class="nf">SetMass</span><span class="p">(</span><span class="nx">mass</span> <span class="o">*</span><a href="https://pkg.go.dev/builtin#float64"><span class="kt">float64</span></a><span class="p">)</span></pre>
+  <p>SetMass sets the mass of the block
+<h4 id="BaseBlockImpl.SetPosition">func (*BaseBlockImpl) SetPosition</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">b</span> <span class="o">*</span><a href="#BaseBlockImpl"><span class="nx">BaseBlockImpl</span></a><span class="p">)</span> <span class="nf">SetPosition</span><span class="p">(</span><span class="nx">position</span> <span class="o">*</span><a href="https://pkg.go.dev/builtin#int"><span class="kt">int</span></a><span class="p">)</span></pre>
+  <p>SetPosition sets the position of the block
+<h4 id="BaseBlockImpl.String">func (*BaseBlockImpl) String</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">b</span> <span class="o">*</span><a href="#BaseBlockImpl"><span class="nx">BaseBlockImpl</span></a><span class="p">)</span> <span class="nf">String</span><span class="p">()</span> <a href="https://pkg.go.dev/builtin#string"><span class="kt">string</span></a></pre>
+  <p>String returns a string representation of the block
+<h4 id="BaseBlockImpl.ToMap">func (*BaseBlockImpl) ToMap</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">b</span> <span class="o">*</span><a href="#BaseBlockImpl"><span class="nx">BaseBlockImpl</span></a><span class="p">)</span> <span class="nf">ToMap</span><span class="p">()</span> <span class="kd">map</span><span class="p">[</span><a href="https://pkg.go.dev/builtin#string"><span class="kt">string</span></a><span class="p">]</span><span class="kd">interface</span><span class="p">{}</span></pre>
+  <p>ToMap converts the block to a map representation
+<h3 id="GlobalModification">type GlobalModification</h3>
+    <pre class="chroma"><span class="kd">type</span> <span class="nx">GlobalModification</span> <span class="kd">struct</span> <span class="p">{</span>
+	<a href="#Modification"><span class="nx">Modification</span></a>
+	<span class="c1">// contains filtered or unexported fields</span>
+<span class="p">}</span></pre>
+    <p>GlobalModification represents a global modification that applies to specified residues
+<h4 id="NewGlobalModification">func NewGlobalModification</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="nf">NewGlobalModification</span><span class="p">(</span><span class="nx">value</span> <a href="https://pkg.go.dev/builtin#string"><span class="kt">string</span></a><span class="p">,</span> <span class="nx">targetResidues</span> <span class="p">[]</span><a href="https://pkg.go.dev/builtin#string"><span class="kt">string</span></a><span class="p">,</span> <span class="nx">modType</span> <a href="https://pkg.go.dev/builtin#string"><span class="kt">string</span></a><span class="p">,</span> <span class="nx">positionConstraint</span> <span class="p">[]</span><a href="https://pkg.go.dev/builtin#string"><span class="kt">string</span></a><span class="p">,</span> <span class="nx">limitPerPosition</span> <span class="o">*</span><a href="https://pkg.go.dev/builtin#int"><span class="kt">int</span></a><span class="p">,</span> <span class="nx">colocalizeKnown</span> <a href="https://pkg.go.dev/builtin#bool"><span class="kt">bool</span></a><span class="p">,</span> <span class="nx">colocalizeUnknown</span> <a href="https://pkg.go.dev/builtin#bool"><span class="kt">bool</span></a><span class="p">)</span> <span class="o">*</span><a href="#GlobalModification"><span class="nx">GlobalModification</span></a></pre>
+  <p>NewGlobalModification creates a new GlobalModification instance
+<h4 id="GlobalModification.GetGlobalModType">func (*GlobalModification) GetGlobalModType</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">gm</span> <span class="o">*</span><a href="#GlobalModification"><span class="nx">GlobalModification</span></a><span class="p">)</span> <span class="nf">GetGlobalModType</span><span class="p">()</span> <a href="https://pkg.go.dev/builtin#string"><span class="kt">string</span></a></pre>
+  <p>GetGlobalModType returns the global modification type
+<h4 id="GlobalModification.GetTargetResidues">func (*GlobalModification) GetTargetResidues</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">gm</span> <span class="o">*</span><a href="#GlobalModification"><span class="nx">GlobalModification</span></a><span class="p">)</span> <span class="nf">GetTargetResidues</span><span class="p">()</span> <span class="p">[]</span><a href="https://pkg.go.dev/builtin#string"><span class="kt">string</span></a></pre>
+  <p>GetTargetResidues returns the target residue types
+<h4 id="GlobalModification.Repr">func (*GlobalModification) Repr</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">gm</span> <span class="o">*</span><a href="#GlobalModification"><span class="nx">GlobalModification</span></a><span class="p">)</span> <span class="nf">Repr</span><span class="p">()</span> <a href="https://pkg.go.dev/builtin#string"><span class="kt">string</span></a></pre>
+  <p>Repr returns a detailed string representation for debugging
+<h4 id="GlobalModification.String">func (*GlobalModification) String</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">gm</span> <span class="o">*</span><a href="#GlobalModification"><span class="nx">GlobalModification</span></a><span class="p">)</span> <span class="nf">String</span><span class="p">()</span> <a href="https://pkg.go.dev/builtin#string"><span class="kt">string</span></a></pre>
+  <p>String returns a string representation of the global modification
+<h4 id="GlobalModification.ToDict">func (*GlobalModification) ToDict</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">gm</span> <span class="o">*</span><a href="#GlobalModification"><span class="nx">GlobalModification</span></a><span class="p">)</span> <span class="nf">ToDict</span><span class="p">()</span> <span class="kd">map</span><span class="p">[</span><a href="https://pkg.go.dev/builtin#string"><span class="kt">string</span></a><span class="p">]</span><span class="kd">interface</span><span class="p">{}</span></pre>
+  <p>ToDict converts the modification to a dictionary representation
+<h4 id="GlobalModification.ToProforma">func (*GlobalModification) ToProforma</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">gm</span> <span class="o">*</span><a href="#GlobalModification"><span class="nx">GlobalModification</span></a><span class="p">)</span> <span class="nf">ToProforma</span><span class="p">()</span> <a href="https://pkg.go.dev/builtin#string"><span class="kt">string</span></a></pre>
+  <p>ToProforma converts the modification to ProForma notation
+<h3 id="Modification">type Modification</h3>
+    <pre class="chroma"><span class="kd">type</span> <span class="nx">Modification</span> <span class="kd">struct</span> <span class="p">{</span>
+	<a href="#BaseBlock"><span class="nx">BaseBlock</span></a>
+	<span class="c1">// contains filtered or unexported fields</span>
+<span class="p">}</span></pre>
+    <p>Modification represents a peptide modification with support for various ProForma 2.0 features
+including crosslinks, branches, ambiguity groups, and localization scores.
+<h4 id="DeepCopyModifications">func DeepCopyModifications</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="nf">DeepCopyModifications</span><span class="p">(</span><span class="nx">mods</span> <span class="p">[]</span><span class="o">*</span><a href="#Modification"><span class="nx">Modification</span></a><span class="p">)</span> <span class="p">[]</span><span class="o">*</span><a href="#Modification"><span class="nx">Modification</span></a></pre>
+  <p>DeepCopyModifications creates deep copies of modification slices
+<h4 id="NewModification">func NewModification</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="nf">NewModification</span><span class="p">(</span><span class="nx">value</span> <a href="https://pkg.go.dev/builtin#string"><span class="kt">string</span></a><span class="p">,</span> <span class="nx">position</span> <span class="o">*</span><a href="https://pkg.go.dev/builtin#int"><span class="kt">int</span></a><span class="p">,</span> <span class="nx">regexPattern</span> <span class="o">*</span><a href="https://pkg.go.dev/builtin#string"><span class="kt">string</span></a><span class="p">,</span> <span class="nx">fullName</span> <span class="o">*</span><a href="https://pkg.go.dev/builtin#string"><span class="kt">string</span></a><span class="p">,</span>
+	<span class="nx">modType</span> <a href="https://pkg.go.dev/builtin#string"><span class="kt">string</span></a><span class="p">,</span> <span class="nx">labile</span> <a href="https://pkg.go.dev/builtin#bool"><span class="kt">bool</span></a><span class="p">,</span> <span class="nx">labilNumber</span> <a href="https://pkg.go.dev/builtin#int"><span class="kt">int</span></a><span class="p">,</span> <span class="nx">mass</span> <a href="https://pkg.go.dev/builtin#float64"><span class="kt">float64</span></a><span class="p">,</span> <span class="nx">allFilled</span> <a href="https://pkg.go.dev/builtin#bool"><span class="kt">bool</span></a><span class="p">,</span>
+	<span class="nx">crosslinkID</span> <span class="o">*</span><a href="https://pkg.go.dev/builtin#string"><span class="kt">string</span></a><span class="p">,</span> <span class="nx">isCrosslinkRef</span> <a href="https://pkg.go.dev/builtin#bool"><span class="kt">bool</span></a><span class="p">,</span> <span class="nx">isBranchRef</span> <a href="https://pkg.go.dev/builtin#bool"><span class="kt">bool</span></a><span class="p">,</span> <span class="nx">isBranch</span> <a href="https://pkg.go.dev/builtin#bool"><span class="kt">bool</span></a><span class="p">,</span>
+	<span class="nx">ambiguityGroup</span> <span class="o">*</span><a href="https://pkg.go.dev/builtin#string"><span class="kt">string</span></a><span class="p">,</span> <span class="nx">isAmbiguityRef</span> <a href="https://pkg.go.dev/builtin#bool"><span class="kt">bool</span></a><span class="p">,</span> <span class="nx">inRange</span> <a href="https://pkg.go.dev/builtin#bool"><span class="kt">bool</span></a><span class="p">,</span>
+	<span class="nx">rangeStart</span><span class="p">,</span> <span class="nx">rangeEnd</span> <span class="o">*</span><a href="https://pkg.go.dev/builtin#int"><span class="kt">int</span></a><span class="p">,</span> <span class="nx">localizationScore</span> <span class="o">*</span><a href="https://pkg.go.dev/builtin#float64"><span class="kt">float64</span></a><span class="p">,</span> <span class="nx">modValue</span> <span class="o">*</span><a href="#ModificationValue"><span class="nx">ModificationValue</span></a><span class="p">,</span>
+	<span class="nx">positionConstraint</span> <span class="p">[]</span><a href="https://pkg.go.dev/builtin#string"><span class="kt">string</span></a><span class="p">,</span> <span class="nx">limitPerPosition</span> <span class="o">*</span><a href="https://pkg.go.dev/builtin#int"><span class="kt">int</span></a><span class="p">,</span> <span class="nx">colocalizeKnown</span> <a href="https://pkg.go.dev/builtin#bool"><span class="kt">bool</span></a><span class="p">,</span> <span class="nx">colocalizeUnknown</span> <a href="https://pkg.go.dev/builtin#bool"><span class="kt">bool</span></a><span class="p">,</span>
+	<span class="nx">isIonType</span> <a href="https://pkg.go.dev/builtin#bool"><span class="kt">bool</span></a><span class="p">)</span> <span class="o">*</span><a href="#Modification"><span class="nx">Modification</span></a></pre>
+  <p>NewModification creates a new Modification instance with the specified parameters.
+It handles various ProForma 2.0 modification features including crosslinks, branches,
+ambiguity groups, and localization scores. The modType parameter must be one of the
+valid modification types (static, variable, terminal, ambiguous, crosslink, branch,
+gap, labile, unknown_position, global).
+<h4 id="Modification.Equal">func (*Modification) Equal</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">m</span> <span class="o">*</span><a href="#Modification"><span class="nx">Modification</span></a><span class="p">)</span> <span class="nf">Equal</span><span class="p">(</span><span class="nx">other</span> <a href="#Modification"><span class="nx">Modification</span></a><span class="p">)</span> <a href="https://pkg.go.dev/builtin#bool"><span class="kt">bool</span></a></pre>
+  <p>Equal checks if two modifications are equal
+<h4 id="Modification.FindPositions">func (*Modification) FindPositions</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">m</span> <span class="o">*</span><a href="#Modification"><span class="nx">Modification</span></a><span class="p">)</span> <span class="nf">FindPositions</span><span class="p">(</span><span class="nx">seq</span> <a href="https://pkg.go.dev/builtin#string"><span class="kt">string</span></a><span class="p">)</span> <span class="p">[][]</span><a href="https://pkg.go.dev/builtin#int"><span class="kt">int</span></a></pre>
+  <p>FindPositions finds positions of the modification in the given sequence
+<h4 id="Modification.GetAmbiguityGroup">func (*Modification) GetAmbiguityGroup</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">m</span> <span class="o">*</span><a href="#Modification"><span class="nx">Modification</span></a><span class="p">)</span> <span class="nf">GetAmbiguityGroup</span><span class="p">()</span> <span class="o">*</span><a href="https://pkg.go.dev/builtin#string"><span class="kt">string</span></a></pre>
+  <p>GetAmbiguityGroup returns the ambiguity group identifier for ambiguous modifications.
+<h4 id="Modification.GetColocalizeKnown">func (*Modification) GetColocalizeKnown</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">m</span> <span class="o">*</span><a href="#Modification"><span class="nx">Modification</span></a><span class="p">)</span> <span class="nf">GetColocalizeKnown</span><span class="p">()</span> <a href="https://pkg.go.dev/builtin#bool"><span class="kt">bool</span></a></pre>
+  <p>GetColocalizeKnown returns whether to colocalize with known positions (ProForma 2.1)
+<h4 id="Modification.GetColocalizeUnknown">func (*Modification) GetColocalizeUnknown</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">m</span> <span class="o">*</span><a href="#Modification"><span class="nx">Modification</span></a><span class="p">)</span> <span class="nf">GetColocalizeUnknown</span><span class="p">()</span> <a href="https://pkg.go.dev/builtin#bool"><span class="kt">bool</span></a></pre>
+  <p>GetColocalizeUnknown returns whether to colocalize with unknown positions (ProForma 2.1)
+<h4 id="Modification.GetCrosslinkID">func (*Modification) GetCrosslinkID</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">m</span> <span class="o">*</span><a href="#Modification"><span class="nx">Modification</span></a><span class="p">)</span> <span class="nf">GetCrosslinkID</span><span class="p">()</span> <span class="o">*</span><a href="https://pkg.go.dev/builtin#string"><span class="kt">string</span></a></pre>
+  <p>GetCrosslinkID returns the crosslink identifier if this is a crosslink modification.
+<h4 id="Modification.GetFullName">func (*Modification) GetFullName</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">m</span> <span class="o">*</span><a href="#Modification"><span class="nx">Modification</span></a><span class="p">)</span> <span class="nf">GetFullName</span><span class="p">()</span> <span class="o">*</span><a href="https://pkg.go.dev/builtin#string"><span class="kt">string</span></a></pre>
+  <p>GetFullName returns the full descriptive name of the modification if available.
+<h4 id="Modification.GetInfoTags">func (*Modification) GetInfoTags</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">m</span> <span class="o">*</span><a href="#Modification"><span class="nx">Modification</span></a><span class="p">)</span> <span class="nf">GetInfoTags</span><span class="p">()</span> <span class="p">[]</span><a href="https://pkg.go.dev/builtin#string"><span class="kt">string</span></a></pre>
+  <p>GetInfoTags returns the list of information tags associated with this modification.
+<h4 id="Modification.GetLabileNumber">func (*Modification) GetLabileNumber</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">m</span> <span class="o">*</span><a href="#Modification"><span class="nx">Modification</span></a><span class="p">)</span> <span class="nf">GetLabileNumber</span><span class="p">()</span> <a href="https://pkg.go.dev/builtin#int"><span class="kt">int</span></a></pre>
+  <p>GetLabileNumber returns the labile fragmentation order number.
+<h4 id="Modification.GetLimitPerPosition">func (*Modification) GetLimitPerPosition</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">m</span> <span class="o">*</span><a href="#Modification"><span class="nx">Modification</span></a><span class="p">)</span> <span class="nf">GetLimitPerPosition</span><span class="p">()</span> <span class="o">*</span><a href="https://pkg.go.dev/builtin#int"><span class="kt">int</span></a></pre>
+  <p>GetLimitPerPosition returns the limit per position (ProForma 2.1)
+<h4 id="Modification.GetMass">func (*Modification) GetMass</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">m</span> <span class="o">*</span><a href="#Modification"><span class="nx">Modification</span></a><span class="p">)</span> <span class="nf">GetMass</span><span class="p">()</span> <span class="o">*</span><a href="https://pkg.go.dev/builtin#float64"><span class="kt">float64</span></a></pre>
+  <p>GetMass returns the mass of the modification.
+If a ModificationValue is set, it returns the mass from that;
+otherwise, it returns the base block mass.
+<h4 id="Modification.GetModType">func (*Modification) GetModType</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">m</span> <span class="o">*</span><a href="#Modification"><span class="nx">Modification</span></a><span class="p">)</span> <span class="nf">GetModType</span><span class="p">()</span> <a href="https://pkg.go.dev/builtin#string"><span class="kt">string</span></a></pre>
+  <p>GetModType returns the modification type (e.g., &quot;static&quot;, &quot;variable&quot;, &quot;terminal&quot;).
+<h4 id="Modification.GetModificationValue">func (*Modification) GetModificationValue</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">m</span> <span class="o">*</span><a href="#Modification"><span class="nx">Modification</span></a><span class="p">)</span> <span class="nf">GetModificationValue</span><span class="p">()</span> <span class="o">*</span><a href="#ModificationValue"><span class="nx">ModificationValue</span></a></pre>
+  <p>GetModificationValue returns the underlying ModificationValue object.
+<h4 id="Modification.GetObservedMass">func (*Modification) GetObservedMass</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">m</span> <span class="o">*</span><a href="#Modification"><span class="nx">Modification</span></a><span class="p">)</span> <span class="nf">GetObservedMass</span><span class="p">()</span> <span class="o">*</span><a href="https://pkg.go.dev/builtin#float64"><span class="kt">float64</span></a></pre>
+  <p>GetObservedMass returns the observed mass of the modification if available.
+This is only available through the ModificationValue.
+<h4 id="Modification.GetOriginalValue">func (*Modification) GetOriginalValue</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">m</span> <span class="o">*</span><a href="#Modification"><span class="nx">Modification</span></a><span class="p">)</span> <span class="nf">GetOriginalValue</span><span class="p">()</span> <a href="https://pkg.go.dev/builtin#string"><span class="kt">string</span></a></pre>
+  <p>GetOriginalValue returns the original modification value including any source prefix.
+<h4 id="Modification.GetPositionConstraint">func (*Modification) GetPositionConstraint</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">m</span> <span class="o">*</span><a href="#Modification"><span class="nx">Modification</span></a><span class="p">)</span> <span class="nf">GetPositionConstraint</span><span class="p">()</span> <span class="p">[]</span><a href="https://pkg.go.dev/builtin#string"><span class="kt">string</span></a></pre>
+  <p>GetPositionConstraint returns the position constraint (ProForma 2.1)
+<h4 id="Modification.GetRegex">func (*Modification) GetRegex</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">m</span> <span class="o">*</span><a href="#Modification"><span class="nx">Modification</span></a><span class="p">)</span> <span class="nf">GetRegex</span><span class="p">()</span> <span class="o">*</span><a href="https://pkg.go.dev/regexp"><span class="nx">regexp</span></a><span class="p">.</span><a href="https://pkg.go.dev/regexp#Regexp"><span class="nx">Regexp</span></a></pre>
+  <p>GetRegex returns the compiled regex pattern for finding modification sites in sequences.
+<h4 id="Modification.GetSource">func (*Modification) GetSource</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">m</span> <span class="o">*</span><a href="#Modification"><span class="nx">Modification</span></a><span class="p">)</span> <span class="nf">GetSource</span><span class="p">()</span> <span class="o">*</span><a href="https://pkg.go.dev/builtin#string"><span class="kt">string</span></a></pre>
+  <p>GetSource returns the modification database source (e.g., &quot;Unimod&quot;, &quot;PSI-MOD&quot;).
+<h4 id="Modification.GetSynonyms">func (*Modification) GetSynonyms</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">m</span> <span class="o">*</span><a href="#Modification"><span class="nx">Modification</span></a><span class="p">)</span> <span class="nf">GetSynonyms</span><span class="p">()</span> <span class="p">[]</span><a href="https://pkg.go.dev/builtin#string"><span class="kt">string</span></a></pre>
+  <p>GetSynonyms returns all synonyms of the modification value.
+<h4 id="Modification.GetValue">func (*Modification) GetValue</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">m</span> <span class="o">*</span><a href="#Modification"><span class="nx">Modification</span></a><span class="p">)</span> <span class="nf">GetValue</span><span class="p">()</span> <a href="https://pkg.go.dev/builtin#string"><span class="kt">string</span></a></pre>
+  <p>GetValue returns the primary value of the modification.
+If a ModificationValue is set, it returns the primary value from that;
+otherwise, it returns the base block value.
+<h4 id="Modification.HasAmbiguity">func (*Modification) HasAmbiguity</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">m</span> <span class="o">*</span><a href="#Modification"><span class="nx">Modification</span></a><span class="p">)</span> <span class="nf">HasAmbiguity</span><span class="p">()</span> <a href="https://pkg.go.dev/builtin#bool"><span class="kt">bool</span></a></pre>
+  <p>HasAmbiguity checks if the modification has ambiguity
+<h4 id="Modification.HasBranch">func (*Modification) HasBranch</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">m</span> <span class="o">*</span><a href="#Modification"><span class="nx">Modification</span></a><span class="p">)</span> <span class="nf">HasBranch</span><span class="p">()</span> <a href="https://pkg.go.dev/builtin#bool"><span class="kt">bool</span></a></pre>
+  <p>HasBranch checks if the modification has branch
+<h4 id="Modification.HasCrosslink">func (*Modification) HasCrosslink</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">m</span> <span class="o">*</span><a href="#Modification"><span class="nx">Modification</span></a><span class="p">)</span> <span class="nf">HasCrosslink</span><span class="p">()</span> <a href="https://pkg.go.dev/builtin#bool"><span class="kt">bool</span></a></pre>
+  <p>HasCrosslink checks if the modification has crosslink
+<h4 id="Modification.Hash">func (*Modification) Hash</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">m</span> <span class="o">*</span><a href="#Modification"><span class="nx">Modification</span></a><span class="p">)</span> <span class="nf">Hash</span><span class="p">()</span> <span class="p">(</span><a href="https://pkg.go.dev/builtin#string"><span class="kt">string</span></a><span class="p">,</span> <a href="https://pkg.go.dev/builtin#error"><span class="kt">error</span></a><span class="p">)</span></pre>
+  <p>Hash generates a hash for the modification
+<h4 id="Modification.IsAllFilled">func (*Modification) IsAllFilled</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">m</span> <span class="o">*</span><a href="#Modification"><span class="nx">Modification</span></a><span class="p">)</span> <span class="nf">IsAllFilled</span><span class="p">()</span> <a href="https://pkg.go.dev/builtin#bool"><span class="kt">bool</span></a></pre>
+  <p>IsAllFilled returns true if the modification occurs at all expected sites.
+<h4 id="Modification.IsAmbiguityRef">func (*Modification) IsAmbiguityRef</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">m</span> <span class="o">*</span><a href="#Modification"><span class="nx">Modification</span></a><span class="p">)</span> <span class="nf">IsAmbiguityRef</span><span class="p">()</span> <a href="https://pkg.go.dev/builtin#bool"><span class="kt">bool</span></a></pre>
+  <p>IsAmbiguityRef returns true if this modification is a reference to an ambiguity group.
+<h4 id="Modification.IsCrosslinkRef">func (*Modification) IsCrosslinkRef</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">m</span> <span class="o">*</span><a href="#Modification"><span class="nx">Modification</span></a><span class="p">)</span> <span class="nf">IsCrosslinkRef</span><span class="p">()</span> <a href="https://pkg.go.dev/builtin#bool"><span class="kt">bool</span></a></pre>
+  <p>IsCrosslinkRef returns true if this modification is a reference to a crosslink.
+<h4 id="Modification.IsIonType">func (*Modification) IsIonType</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">m</span> <span class="o">*</span><a href="#Modification"><span class="nx">Modification</span></a><span class="p">)</span> <span class="nf">IsIonType</span><span class="p">()</span> <a href="https://pkg.go.dev/builtin#bool"><span class="kt">bool</span></a></pre>
+  <p>IsIonType returns whether this is an ion type modification (ProForma 2.1 Section 11.6)
+<h4 id="Modification.IsLabile">func (*Modification) IsLabile</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">m</span> <span class="o">*</span><a href="#Modification"><span class="nx">Modification</span></a><span class="p">)</span> <span class="nf">IsLabile</span><span class="p">()</span> <a href="https://pkg.go.dev/builtin#bool"><span class="kt">bool</span></a></pre>
+  <p>IsLabile returns true if the modification is labile (can be lost during fragmentation).
+<h4 id="Modification.String">func (*Modification) String</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">m</span> <span class="o">*</span><a href="#Modification"><span class="nx">Modification</span></a><span class="p">)</span> <span class="nf">String</span><span class="p">()</span> <a href="https://pkg.go.dev/builtin#string"><span class="kt">string</span></a></pre>
+  <p>String returns a string representation of the modification
+<h4 id="Modification.ToMap">func (*Modification) ToMap</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">m</span> <span class="o">*</span><a href="#Modification"><span class="nx">Modification</span></a><span class="p">)</span> <span class="nf">ToMap</span><span class="p">()</span> <span class="kd">map</span><span class="p">[</span><a href="https://pkg.go.dev/builtin#string"><span class="kt">string</span></a><span class="p">]</span><span class="kd">interface</span><span class="p">{}</span></pre>
+  <p>ToMap converts the modification to a map representation
+<h4 id="Modification.ToProforma">func (*Modification) ToProforma</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">m</span> <span class="o">*</span><a href="#Modification"><span class="nx">Modification</span></a><span class="p">)</span> <span class="nf">ToProforma</span><span class="p">()</span> <a href="https://pkg.go.dev/builtin#string"><span class="kt">string</span></a></pre>
+  <p>ToProforma converts the modification to ProForma notation string
+<h3 id="ModificationMap">type ModificationMap</h3>
+    <pre class="chroma"><span class="kd">type</span> <span class="nx">ModificationMap</span> <span class="kd">struct</span> <span class="p">{</span>
+	<span class="c1">// contains filtered or unexported fields</span>
+<span class="p">}</span></pre>
+    <p>ModificationMap maps modifications to their positions in a sequence for quick lookup
+<h4 id="NewModificationMap">func NewModificationMap</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="nf">NewModificationMap</span><span class="p">(</span>
+	<span class="nx">seq</span> <a href="https://pkg.go.dev/builtin#string"><span class="kt">string</span></a><span class="p">,</span>
+	<span class="nx">mods</span> <span class="p">[]</span><span class="o">*</span><a href="#Modification"><span class="nx">Modification</span></a><span class="p">,</span>
+	<span class="nx">ignorePositions</span> <span class="kd">map</span><span class="p">[</span><a href="https://pkg.go.dev/builtin#int"><span class="kt">int</span></a><span class="p">]</span><a href="https://pkg.go.dev/builtin#bool"><span class="kt">bool</span></a><span class="p">,</span>
+	<span class="nx">parsePosition</span> <a href="https://pkg.go.dev/builtin#bool"><span class="kt">bool</span></a><span class="p">,</span>
+	<span class="nx">modPositionDict</span> <span class="kd">map</span><span class="p">[</span><a href="https://pkg.go.dev/builtin#string"><span class="kt">string</span></a><span class="p">][]</span><a href="https://pkg.go.dev/builtin#int"><span class="kt">int</span></a><span class="p">,</span>
+<span class="p">)</span> <span class="o">*</span><a href="#ModificationMap"><span class="nx">ModificationMap</span></a></pre>
+  <p>NewModificationMap creates a new ModificationMap instance
+<h4 id="ModificationMap.GetMod">func (*ModificationMap) GetMod</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">mm</span> <span class="o">*</span><a href="#ModificationMap"><span class="nx">ModificationMap</span></a><span class="p">)</span> <span class="nf">GetMod</span><span class="p">(</span><span class="nx">modName</span> <a href="https://pkg.go.dev/builtin#string"><span class="kt">string</span></a><span class="p">)</span> <span class="o">*</span><a href="#Modification"><span class="nx">Modification</span></a></pre>
+  <p>GetMod gets the Modification object by its name
+<h4 id="ModificationMap.GetModPositions">func (*ModificationMap) GetModPositions</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">mm</span> <span class="o">*</span><a href="#ModificationMap"><span class="nx">ModificationMap</span></a><span class="p">)</span> <span class="nf">GetModPositions</span><span class="p">(</span><span class="nx">modName</span> <a href="https://pkg.go.dev/builtin#string"><span class="kt">string</span></a><span class="p">)</span> <span class="p">[]</span><a href="https://pkg.go.dev/builtin#int"><span class="kt">int</span></a></pre>
+  <p>GetModPositions gets the positions of a modification by its name
+<h4 id="ModificationMap.GetModsAtPosition">func (*ModificationMap) GetModsAtPosition</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">mm</span> <span class="o">*</span><a href="#ModificationMap"><span class="nx">ModificationMap</span></a><span class="p">)</span> <span class="nf">GetModsAtPosition</span><span class="p">(</span><span class="nx">position</span> <a href="https://pkg.go.dev/builtin#int"><span class="kt">int</span></a><span class="p">)</span> <span class="p">[]</span><span class="o">*</span><a href="#Modification"><span class="nx">Modification</span></a></pre>
+  <p>GetModsAtPosition gets all modifications at a specific position
+<h4 id="ModificationMap.HasModAtPosition">func (*ModificationMap) HasModAtPosition</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">mm</span> <span class="o">*</span><a href="#ModificationMap"><span class="nx">ModificationMap</span></a><span class="p">)</span> <span class="nf">HasModAtPosition</span><span class="p">(</span><span class="nx">position</span> <a href="https://pkg.go.dev/builtin#int"><span class="kt">int</span></a><span class="p">,</span> <span class="nx">modName</span> <span class="o">*</span><a href="https://pkg.go.dev/builtin#string"><span class="kt">string</span></a><span class="p">)</span> <a href="https://pkg.go.dev/builtin#bool"><span class="kt">bool</span></a></pre>
+  <p>HasModAtPosition checks if a position has any modification or a specific modification
+<h4 id="ModificationMap.ToDict">func (*ModificationMap) ToDict</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">mm</span> <span class="o">*</span><a href="#ModificationMap"><span class="nx">ModificationMap</span></a><span class="p">)</span> <span class="nf">ToDict</span><span class="p">()</span> <span class="kd">map</span><span class="p">[</span><a href="https://pkg.go.dev/builtin#string"><span class="kt">string</span></a><span class="p">]</span><span class="kd">interface</span><span class="p">{}</span></pre>
+  <p>ToDict converts the modification map to a dictionary representation
+<h3 id="ModificationValue">type ModificationValue</h3>
+    <pre class="chroma"><span class="kd">type</span> <span class="nx">ModificationValue</span> <span class="kd">struct</span> <span class="p">{</span>
+	<span class="c1">// contains filtered or unexported fields</span>
+<span class="p">}</span></pre>
+    <p>ModificationValue represents a modification value with unified pipe value handling
+<h4 id="NewModificationValue">func NewModificationValue</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="nf">NewModificationValue</span><span class="p">(</span><span class="nx">value</span> <a href="https://pkg.go.dev/builtin#string"><span class="kt">string</span></a><span class="p">,</span> <span class="nx">mass</span> <span class="o">*</span><a href="https://pkg.go.dev/builtin#float64"><span class="kt">float64</span></a><span class="p">)</span> <span class="o">*</span><a href="#ModificationValue"><span class="nx">ModificationValue</span></a></pre>
+  <p>NewModificationValue creates a new ModificationValue instance
+<h4 id="ModificationValue.ForEach">func (*ModificationValue) ForEach</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">mv</span> <span class="o">*</span><a href="#ModificationValue"><span class="nx">ModificationValue</span></a><span class="p">)</span> <span class="nf">ForEach</span><span class="p">(</span><span class="nx">fn</span> <span class="kd">func</span><span class="p">(</span><span class="nx">pv</span> <span class="o">*</span><a href="#PipeValue"><span class="nx">PipeValue</span></a><span class="p">))</span></pre>
+  <p>ForEach iterates through all pipe values
+<h4 id="ModificationValue.Get">func (*ModificationValue) Get</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">mv</span> <span class="o">*</span><a href="#ModificationValue"><span class="nx">ModificationValue</span></a><span class="p">)</span> <span class="nf">Get</span><span class="p">(</span><span class="nx">index</span> <a href="https://pkg.go.dev/builtin#int"><span class="kt">int</span></a><span class="p">)</span> <span class="o">*</span><a href="#PipeValue"><span class="nx">PipeValue</span></a></pre>
+  <p>Get returns pipe value at index
+<h4 id="ModificationValue.GetAmbiguityGroup">func (*ModificationValue) GetAmbiguityGroup</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">mv</span> <span class="o">*</span><a href="#ModificationValue"><span class="nx">ModificationValue</span></a><span class="p">)</span> <span class="nf">GetAmbiguityGroup</span><span class="p">()</span> <span class="o">*</span><a href="https://pkg.go.dev/builtin#string"><span class="kt">string</span></a></pre>
+  <p>GetAmbiguityGroup returns the ambiguity group if any
+<h4 id="ModificationValue.GetCrosslinkID">func (*ModificationValue) GetCrosslinkID</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">mv</span> <span class="o">*</span><a href="#ModificationValue"><span class="nx">ModificationValue</span></a><span class="p">)</span> <span class="nf">GetCrosslinkID</span><span class="p">()</span> <span class="o">*</span><a href="https://pkg.go.dev/builtin#string"><span class="kt">string</span></a></pre>
+  <p>GetCrosslinkID returns the crosslink ID if any
+<h4 id="ModificationValue.GetInfoTags">func (*ModificationValue) GetInfoTags</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">mv</span> <span class="o">*</span><a href="#ModificationValue"><span class="nx">ModificationValue</span></a><span class="p">)</span> <span class="nf">GetInfoTags</span><span class="p">()</span> <span class="p">[]</span><a href="https://pkg.go.dev/builtin#string"><span class="kt">string</span></a></pre>
+  <p>GetInfoTags returns list of info tags
+<h4 id="ModificationValue.GetMass">func (*ModificationValue) GetMass</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">mv</span> <span class="o">*</span><a href="#ModificationValue"><span class="nx">ModificationValue</span></a><span class="p">)</span> <span class="nf">GetMass</span><span class="p">()</span> <span class="o">*</span><a href="https://pkg.go.dev/builtin#float64"><span class="kt">float64</span></a></pre>
+  <p>GetMass returns the mass value
+<h4 id="ModificationValue.GetObservedMass">func (*ModificationValue) GetObservedMass</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">mv</span> <span class="o">*</span><a href="#ModificationValue"><span class="nx">ModificationValue</span></a><span class="p">)</span> <span class="nf">GetObservedMass</span><span class="p">()</span> <span class="o">*</span><a href="https://pkg.go.dev/builtin#float64"><span class="kt">float64</span></a></pre>
+  <p>GetObservedMass returns the observed mass if any
+<h4 id="ModificationValue.GetPipeValues">func (*ModificationValue) GetPipeValues</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">mv</span> <span class="o">*</span><a href="#ModificationValue"><span class="nx">ModificationValue</span></a><span class="p">)</span> <span class="nf">GetPipeValues</span><span class="p">()</span> <span class="p">[]</span><span class="o">*</span><a href="#PipeValue"><span class="nx">PipeValue</span></a></pre>
+  <p>GetPipeValues returns all pipe values
+<h4 id="ModificationValue.GetPrimaryValue">func (*ModificationValue) GetPrimaryValue</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">mv</span> <span class="o">*</span><a href="#ModificationValue"><span class="nx">ModificationValue</span></a><span class="p">)</span> <span class="nf">GetPrimaryValue</span><span class="p">()</span> <a href="https://pkg.go.dev/builtin#string"><span class="kt">string</span></a></pre>
+  <p>GetPrimaryValue returns the primary value
+<h4 id="ModificationValue.GetSource">func (*ModificationValue) GetSource</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">mv</span> <span class="o">*</span><a href="#ModificationValue"><span class="nx">ModificationValue</span></a><span class="p">)</span> <span class="nf">GetSource</span><span class="p">()</span> <span class="o">*</span><a href="https://pkg.go.dev/builtin#string"><span class="kt">string</span></a></pre>
+  <p>GetSource returns the source of the modification value
+<h4 id="ModificationValue.GetSynonyms">func (*ModificationValue) GetSynonyms</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">mv</span> <span class="o">*</span><a href="#ModificationValue"><span class="nx">ModificationValue</span></a><span class="p">)</span> <span class="nf">GetSynonyms</span><span class="p">()</span> <span class="p">[]</span><a href="https://pkg.go.dev/builtin#string"><span class="kt">string</span></a></pre>
+  <p>GetSynonyms returns list of synonyms
+<h4 id="ModificationValue.IsAmbiguityRef">func (*ModificationValue) IsAmbiguityRef</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">mv</span> <span class="o">*</span><a href="#ModificationValue"><span class="nx">ModificationValue</span></a><span class="p">)</span> <span class="nf">IsAmbiguityRef</span><span class="p">()</span> <a href="https://pkg.go.dev/builtin#bool"><span class="kt">bool</span></a></pre>
+  <p>IsAmbiguityRef checks if modification is an ambiguity reference
+<h4 id="ModificationValue.IsBranch">func (*ModificationValue) IsBranch</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">mv</span> <span class="o">*</span><a href="#ModificationValue"><span class="nx">ModificationValue</span></a><span class="p">)</span> <span class="nf">IsBranch</span><span class="p">()</span> <a href="https://pkg.go.dev/builtin#bool"><span class="kt">bool</span></a></pre>
+  <p>IsBranch checks if modification is a branch
+<h4 id="ModificationValue.IsBranchRef">func (*ModificationValue) IsBranchRef</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">mv</span> <span class="o">*</span><a href="#ModificationValue"><span class="nx">ModificationValue</span></a><span class="p">)</span> <span class="nf">IsBranchRef</span><span class="p">()</span> <a href="https://pkg.go.dev/builtin#bool"><span class="kt">bool</span></a></pre>
+  <p>IsBranchRef checks if modification is a branch reference
+<h4 id="ModificationValue.IsCrosslinkRef">func (*ModificationValue) IsCrosslinkRef</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">mv</span> <span class="o">*</span><a href="#ModificationValue"><span class="nx">ModificationValue</span></a><span class="p">)</span> <span class="nf">IsCrosslinkRef</span><span class="p">()</span> <a href="https://pkg.go.dev/builtin#bool"><span class="kt">bool</span></a></pre>
+  <p>IsCrosslinkRef checks if modification is a crosslink reference
+<h4 id="ModificationValue.Len">func (*ModificationValue) Len</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">mv</span> <span class="o">*</span><a href="#ModificationValue"><span class="nx">ModificationValue</span></a><span class="p">)</span> <span class="nf">Len</span><span class="p">()</span> <a href="https://pkg.go.dev/builtin#int"><span class="kt">int</span></a></pre>
+  <p>Len returns number of pipe values
+<h4 id="ModificationValue.ToString">func (*ModificationValue) ToString</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">mv</span> <span class="o">*</span><a href="#ModificationValue"><span class="nx">ModificationValue</span></a><span class="p">)</span> <span class="nf">ToString</span><span class="p">()</span> <a href="https://pkg.go.dev/builtin#string"><span class="kt">string</span></a></pre>
+  <p>ToString returns string representation
+<h3 id="ParseProFormaResult">type ParseProFormaResult</h3>
+    <pre class="chroma"><span class="kd">type</span> <span class="nx">ParseProFormaResult</span> <span class="kd">struct</span> <span class="p">{</span>
+	<span id="ParseProFormaResult.BaseSequence"><span class="nx">BaseSequence</span></span>        <a href="https://pkg.go.dev/builtin#string"><span class="kt">string</span></a>
+	<span id="ParseProFormaResult.Modifications"><span class="nx">Modifications</span></span>       <span class="kd">map</span><span class="p">[</span><a href="https://pkg.go.dev/builtin#string"><span class="kt">string</span></a><span class="p">][]</span><span class="o">*</span><a href="#Modification"><span class="nx">Modification</span></a>
+	<span id="ParseProFormaResult.GlobalMods"><span class="nx">GlobalMods</span></span>          <span class="p">[]</span><span class="o">*</span><a href="#GlobalModification"><span class="nx">GlobalModification</span></a>
+	<span id="ParseProFormaResult.SequenceAmbiguities"><span class="nx">SequenceAmbiguities</span></span> <span class="p">[]</span><span class="o">*</span><a href="#SequenceAmbiguity"><span class="nx">SequenceAmbiguity</span></a>
+	<span id="ParseProFormaResult.Charge"><span class="nx">Charge</span></span>              <span class="o">*</span><a href="https://pkg.go.dev/builtin#int"><span class="kt">int</span></a>
+	<span id="ParseProFormaResult.IonicSpecies"><span class="nx">IonicSpecies</span></span>        <span class="o">*</span><a href="https://pkg.go.dev/builtin#string"><span class="kt">string</span></a>
+	<span id="ParseProFormaResult.PeptidoformName"><span class="nx">PeptidoformName</span></span>     <span class="o">*</span><a href="https://pkg.go.dev/builtin#string"><span class="kt">string</span></a>
+	<span id="ParseProFormaResult.PeptidoformIonName"><span class="nx">PeptidoformIonName</span></span>  <span class="o">*</span><a href="https://pkg.go.dev/builtin#string"><span class="kt">string</span></a>
+	<span id="ParseProFormaResult.CompoundIonName"><span class="nx">CompoundIonName</span></span>     <span class="o">*</span><a href="https://pkg.go.dev/builtin#string"><span class="kt">string</span></a>
+<span class="p">}</span></pre>
+    <p>ParseProFormaResult contains all parsed components from a ProForma string
+including the base sequence, modifications, global modifications, sequence ambiguities,
+charge state, ionic species information, and named entities (ProForma 2.1).
+<h4 id="ParseProFormaDetailed">func ParseProFormaDetailed</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="nf">ParseProFormaDetailed</span><span class="p">(</span><span class="nx">proformaStr</span> <a href="https://pkg.go.dev/builtin#string"><span class="kt">string</span></a><span class="p">)</span> <span class="p">(</span><span class="o">*</span><a href="#ParseProFormaResult"><span class="nx">ParseProFormaResult</span></a><span class="p">,</span> <a href="https://pkg.go.dev/builtin#error"><span class="kt">error</span></a><span class="p">)</span></pre>
+  <p>ParseProFormaDetailed parses a ProForma string and returns a structured result
+containing all parsed components including charge, ionic species, and named entities (ProForma 2.1).
+<h3 id="PipeValue">type PipeValue</h3>
+    <pre class="chroma"><span class="kd">type</span> <span class="nx">PipeValue</span> <span class="kd">struct</span> <span class="p">{</span>
+	<span class="c1">// contains filtered or unexported fields</span>
+<span class="p">}</span></pre>
+    <p>PipeValue represents a single pipe-separated value in a modification
+<h4 id="NewPipeValue">func NewPipeValue</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="nf">NewPipeValue</span><span class="p">(</span><span class="nx">value</span> <a href="https://pkg.go.dev/builtin#string"><span class="kt">string</span></a><span class="p">,</span> <span class="nx">valueType</span> <a href="#PipeValueType"><span class="nx">PipeValueType</span></a><span class="p">,</span> <span class="nx">originalValue</span> <a href="https://pkg.go.dev/builtin#string"><span class="kt">string</span></a><span class="p">)</span> <span class="o">*</span><a href="#PipeValue"><span class="nx">PipeValue</span></a></pre>
+  <p>NewPipeValue creates a new PipeValue instance
+<h4 id="PipeValue.AssignType">func (*PipeValue) AssignType</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">pv</span> <span class="o">*</span><a href="#PipeValue"><span class="nx">PipeValue</span></a><span class="p">)</span> <span class="nf">AssignType</span><span class="p">(</span><span class="nx">valueType</span> <a href="#PipeValueType"><span class="nx">PipeValueType</span></a><span class="p">)</span></pre>
+  <p>AssignType adds a type to the assigned types list
+<h4 id="PipeValue.GetAmbiguityGroup">func (*PipeValue) GetAmbiguityGroup</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">pv</span> <span class="o">*</span><a href="#PipeValue"><span class="nx">PipeValue</span></a><span class="p">)</span> <span class="nf">GetAmbiguityGroup</span><span class="p">()</span> <span class="o">*</span><a href="https://pkg.go.dev/builtin#string"><span class="kt">string</span></a></pre>
+  <p>GetAmbiguityGroup returns the ambiguity group
+<h4 id="PipeValue.GetCharge">func (*PipeValue) GetCharge</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">pv</span> <span class="o">*</span><a href="#PipeValue"><span class="nx">PipeValue</span></a><span class="p">)</span> <span class="nf">GetCharge</span><span class="p">()</span> <span class="o">*</span><a href="https://pkg.go.dev/builtin#string"><span class="kt">string</span></a></pre>
+  <p>GetCharge returns the charge notation (ProForma 2.1)
+<h4 id="PipeValue.GetChargeValue">func (*PipeValue) GetChargeValue</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">pv</span> <span class="o">*</span><a href="#PipeValue"><span class="nx">PipeValue</span></a><span class="p">)</span> <span class="nf">GetChargeValue</span><span class="p">()</span> <span class="o">*</span><a href="https://pkg.go.dev/builtin#int"><span class="kt">int</span></a></pre>
+  <p>GetChargeValue returns the numeric charge value (ProForma 2.1)
+<h4 id="PipeValue.GetCrosslinkID">func (*PipeValue) GetCrosslinkID</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">pv</span> <span class="o">*</span><a href="#PipeValue"><span class="nx">PipeValue</span></a><span class="p">)</span> <span class="nf">GetCrosslinkID</span><span class="p">()</span> <span class="o">*</span><a href="https://pkg.go.dev/builtin#string"><span class="kt">string</span></a></pre>
+  <p>GetCrosslinkID returns the crosslink ID
+<h4 id="PipeValue.GetLocalizationScore">func (*PipeValue) GetLocalizationScore</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">pv</span> <span class="o">*</span><a href="#PipeValue"><span class="nx">PipeValue</span></a><span class="p">)</span> <span class="nf">GetLocalizationScore</span><span class="p">()</span> <span class="o">*</span><a href="https://pkg.go.dev/builtin#float64"><span class="kt">float64</span></a></pre>
+  <p>GetLocalizationScore returns the localization score
+<h4 id="PipeValue.GetMass">func (*PipeValue) GetMass</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">pv</span> <span class="o">*</span><a href="#PipeValue"><span class="nx">PipeValue</span></a><span class="p">)</span> <span class="nf">GetMass</span><span class="p">()</span> <span class="o">*</span><a href="https://pkg.go.dev/builtin#float64"><span class="kt">float64</span></a></pre>
+  <p>GetMass returns the mass
+<h4 id="PipeValue.GetObservedMass">func (*PipeValue) GetObservedMass</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">pv</span> <span class="o">*</span><a href="#PipeValue"><span class="nx">PipeValue</span></a><span class="p">)</span> <span class="nf">GetObservedMass</span><span class="p">()</span> <span class="o">*</span><a href="https://pkg.go.dev/builtin#float64"><span class="kt">float64</span></a></pre>
+  <p>GetObservedMass returns the observed mass
+<h4 id="PipeValue.GetSource">func (*PipeValue) GetSource</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">pv</span> <span class="o">*</span><a href="#PipeValue"><span class="nx">PipeValue</span></a><span class="p">)</span> <span class="nf">GetSource</span><span class="p">()</span> <span class="o">*</span><a href="https://pkg.go.dev/builtin#string"><span class="kt">string</span></a></pre>
+  <p>GetSource returns the source
+<h4 id="PipeValue.GetType">func (*PipeValue) GetType</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">pv</span> <span class="o">*</span><a href="#PipeValue"><span class="nx">PipeValue</span></a><span class="p">)</span> <span class="nf">GetType</span><span class="p">()</span> <a href="#PipeValueType"><span class="nx">PipeValueType</span></a></pre>
+  <p>GetType returns the value type
+<h4 id="PipeValue.GetValue">func (*PipeValue) GetValue</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">pv</span> <span class="o">*</span><a href="#PipeValue"><span class="nx">PipeValue</span></a><span class="p">)</span> <span class="nf">GetValue</span><span class="p">()</span> <a href="https://pkg.go.dev/builtin#string"><span class="kt">string</span></a></pre>
+  <p>GetValue returns the value
+<h4 id="PipeValue.IsAmbiguityRef">func (*PipeValue) IsAmbiguityRef</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">pv</span> <span class="o">*</span><a href="#PipeValue"><span class="nx">PipeValue</span></a><span class="p">)</span> <span class="nf">IsAmbiguityRef</span><span class="p">()</span> <a href="https://pkg.go.dev/builtin#bool"><span class="kt">bool</span></a></pre>
+  <p>IsAmbiguityRef returns whether this is an ambiguity reference
+<h4 id="PipeValue.IsBranch">func (*PipeValue) IsBranch</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">pv</span> <span class="o">*</span><a href="#PipeValue"><span class="nx">PipeValue</span></a><span class="p">)</span> <span class="nf">IsBranch</span><span class="p">()</span> <a href="https://pkg.go.dev/builtin#bool"><span class="kt">bool</span></a></pre>
+  <p>IsBranch returns whether this is a branch
+<h4 id="PipeValue.IsBranchRef">func (*PipeValue) IsBranchRef</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">pv</span> <span class="o">*</span><a href="#PipeValue"><span class="nx">PipeValue</span></a><span class="p">)</span> <span class="nf">IsBranchRef</span><span class="p">()</span> <a href="https://pkg.go.dev/builtin#bool"><span class="kt">bool</span></a></pre>
+  <p>IsBranchRef returns whether this is a branch reference
+<h4 id="PipeValue.IsCrosslinkRef">func (*PipeValue) IsCrosslinkRef</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">pv</span> <span class="o">*</span><a href="#PipeValue"><span class="nx">PipeValue</span></a><span class="p">)</span> <span class="nf">IsCrosslinkRef</span><span class="p">()</span> <a href="https://pkg.go.dev/builtin#bool"><span class="kt">bool</span></a></pre>
+  <p>IsCrosslinkRef returns whether this is a crosslink reference
+<h4 id="PipeValue.IsValidFormula">func (*PipeValue) IsValidFormula</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">pv</span> <span class="o">*</span><a href="#PipeValue"><span class="nx">PipeValue</span></a><span class="p">)</span> <span class="nf">IsValidFormula</span><span class="p">()</span> <a href="https://pkg.go.dev/builtin#bool"><span class="kt">bool</span></a></pre>
+  <p>IsValidFormula returns whether this is a valid formula
+<h4 id="PipeValue.IsValidGlycan">func (*PipeValue) IsValidGlycan</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">pv</span> <span class="o">*</span><a href="#PipeValue"><span class="nx">PipeValue</span></a><span class="p">)</span> <span class="nf">IsValidGlycan</span><span class="p">()</span> <a href="https://pkg.go.dev/builtin#bool"><span class="kt">bool</span></a></pre>
+  <p>IsValidGlycan returns whether this is a valid glycan
+<h4 id="PipeValue.SetMass">func (*PipeValue) SetMass</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">pv</span> <span class="o">*</span><a href="#PipeValue"><span class="nx">PipeValue</span></a><span class="p">)</span> <span class="nf">SetMass</span><span class="p">(</span><span class="nx">mass</span> <a href="https://pkg.go.dev/builtin#float64"><span class="kt">float64</span></a><span class="p">)</span></pre>
+  <p>SetMass sets the mass
+<h4 id="PipeValue.SetObservedMass">func (*PipeValue) SetObservedMass</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">pv</span> <span class="o">*</span><a href="#PipeValue"><span class="nx">PipeValue</span></a><span class="p">)</span> <span class="nf">SetObservedMass</span><span class="p">(</span><span class="nx">mass</span> <a href="https://pkg.go.dev/builtin#float64"><span class="kt">float64</span></a><span class="p">)</span></pre>
+  <p>SetObservedMass sets the observed mass
+<h4 id="PipeValue.SetSource">func (*PipeValue) SetSource</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">pv</span> <span class="o">*</span><a href="#PipeValue"><span class="nx">PipeValue</span></a><span class="p">)</span> <span class="nf">SetSource</span><span class="p">(</span><span class="nx">source</span> <a href="https://pkg.go.dev/builtin#string"><span class="kt">string</span></a><span class="p">)</span></pre>
+  <p>SetSource sets the source
+<h4 id="PipeValue.SetType">func (*PipeValue) SetType</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">pv</span> <span class="o">*</span><a href="#PipeValue"><span class="nx">PipeValue</span></a><span class="p">)</span> <span class="nf">SetType</span><span class="p">(</span><span class="nx">valueType</span> <a href="#PipeValueType"><span class="nx">PipeValueType</span></a><span class="p">)</span></pre>
+  <p>SetType changes the value type
+<h4 id="PipeValue.String">func (*PipeValue) String</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">pv</span> <span class="o">*</span><a href="#PipeValue"><span class="nx">PipeValue</span></a><span class="p">)</span> <span class="nf">String</span><span class="p">()</span> <a href="https://pkg.go.dev/builtin#string"><span class="kt">string</span></a></pre>
+  <p>String returns the string representation
+<h3 id="PipeValueType">type PipeValueType</h3>
+    <pre class="chroma"><span class="kd">type</span> <span class="nx">PipeValueType</span> <a href="https://pkg.go.dev/builtin#string"><span class="kt">string</span></a></pre>
+    <p>PipeValueType represents the type of a pipe-separated value
+<pre class="chroma"><span class="kd">const</span> <span class="p">(</span>
+	<span id="PipeValueTypeSynonym"><span class="nx">PipeValueTypeSynonym</span></span>      <a href="#PipeValueType"><span class="nx">PipeValueType</span></a> <span class="p">=</span> <span class="s">&#34;synonym&#34;</span>
+	<span id="PipeValueTypeInfoTag"><span class="nx">PipeValueTypeInfoTag</span></span>      <a href="#PipeValueType"><span class="nx">PipeValueType</span></a> <span class="p">=</span> <span class="s">&#34;info_tag&#34;</span>
+	<span id="PipeValueTypeMass"><span class="nx">PipeValueTypeMass</span></span>         <a href="#PipeValueType"><span class="nx">PipeValueType</span></a> <span class="p">=</span> <span class="s">&#34;mass&#34;</span>
+	<span id="PipeValueTypeObservedMass"><span class="nx">PipeValueTypeObservedMass</span></span> <a href="#PipeValueType"><span class="nx">PipeValueType</span></a> <span class="p">=</span> <span class="s">&#34;observed_mass&#34;</span>
+	<span id="PipeValueTypeCrosslink"><span class="nx">PipeValueTypeCrosslink</span></span>    <a href="#PipeValueType"><span class="nx">PipeValueType</span></a> <span class="p">=</span> <span class="s">&#34;crosslink&#34;</span>
+	<span id="PipeValueTypeBranch"><span class="nx">PipeValueTypeBranch</span></span>       <a href="#PipeValueType"><span class="nx">PipeValueType</span></a> <span class="p">=</span> <span class="s">&#34;branch&#34;</span>
+	<span id="PipeValueTypeAmbiguity"><span class="nx">PipeValueTypeAmbiguity</span></span>    <a href="#PipeValueType"><span class="nx">PipeValueType</span></a> <span class="p">=</span> <span class="s">&#34;ambiguity&#34;</span>
+	<span id="PipeValueTypeGlycan"><span class="nx">PipeValueTypeGlycan</span></span>       <a href="#PipeValueType"><span class="nx">PipeValueType</span></a> <span class="p">=</span> <span class="s">&#34;glycan&#34;</span>
+	<span id="PipeValueTypeGap"><span class="nx">PipeValueTypeGap</span></span>          <a href="#PipeValueType"><span class="nx">PipeValueType</span></a> <span class="p">=</span> <span class="s">&#34;gap&#34;</span>
+	<span id="PipeValueTypeFormula"><span class="nx">PipeValueTypeFormula</span></span>      <a href="#PipeValueType"><span class="nx">PipeValueType</span></a> <span class="p">=</span> <span class="s">&#34;formula&#34;</span>
+<span class="p">)</span></pre>
+  <p>Constants for different pipe value types
+<h3 id="ProFormaParser">type ProFormaParser</h3>
+    <pre class="chroma"><span class="kd">type</span> <span class="nx">ProFormaParser</span> <span class="kd">struct</span> <span class="p">{</span>
+	<span class="c1">// contains filtered or unexported fields</span>
+<span class="p">}</span></pre>
+    <p>ProFormaParser handles parsing of ProForma 2.0 notation strings.
+It contains compiled regex patterns for efficient parsing of various ProForma elements.
+<h4 id="NewProFormaParser">func NewProFormaParser</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="nf">NewProFormaParser</span><span class="p">()</span> <span class="o">*</span><a href="#ProFormaParser"><span class="nx">ProFormaParser</span></a></pre>
+  <p>NewProFormaParser creates a new ProFormaParser with pre-compiled regex patterns
+for parsing mass shifts, crosslinks, and branches.
+<h4 id="ProFormaParser.Parse">func (*ProFormaParser) Parse</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">p</span> <span class="o">*</span><a href="#ProFormaParser"><span class="nx">ProFormaParser</span></a><span class="p">)</span> <span class="nf">Parse</span><span class="p">(</span><span class="nx">proformaStr</span> <a href="https://pkg.go.dev/builtin#string"><span class="kt">string</span></a><span class="p">)</span> <span class="p">(</span><a href="https://pkg.go.dev/builtin#string"><span class="kt">string</span></a><span class="p">,</span> <span class="kd">map</span><span class="p">[</span><a href="https://pkg.go.dev/builtin#string"><span class="kt">string</span></a><span class="p">][]</span><span class="o">*</span><a href="#Modification"><span class="nx">Modification</span></a><span class="p">,</span> <span class="p">[]</span><span class="o">*</span><a href="#GlobalModification"><span class="nx">GlobalModification</span></a><span class="p">,</span> <span class="p">[]</span><span class="o">*</span><a href="#SequenceAmbiguity"><span class="nx">SequenceAmbiguity</span></a><span class="p">,</span> <span class="p">[]</span><span class="o">*</span><a href="https://pkg.go.dev/builtin#int"><span class="kt">int</span></a><span class="p">,</span> <a href="https://pkg.go.dev/builtin#error"><span class="kt">error</span></a><span class="p">)</span></pre>
+  <p>Parse parses a ProForma string into its constituent parts and returns the base sequence,
+modifications map, global modifications, sequence ambiguities, and charge information.
+This is the main parsing method that handles all ProForma 2.1 notation elements.
+<h3 id="Sequence">type Sequence</h3>
+    <pre class="chroma"><span class="kd">type</span> <span class="nx">Sequence</span> <span class="kd">struct</span> <span class="p">{</span>
+	<span class="c1">// contains filtered or unexported fields</span>
+<span class="p">}</span></pre>
+    <p>Sequence represents a peptide sequence with modifications and supports ProForma notation.
+It can handle single sequences, multi-chain complexes, and chimeric peptidoforms.
+<h4 id="FromProforma">func FromProforma</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="nf">FromProforma</span><span class="p">(</span><span class="nx">proformaStr</span> <a href="https://pkg.go.dev/builtin#string"><span class="kt">string</span></a><span class="p">)</span> <span class="p">(</span><span class="o">*</span><a href="#Sequence"><span class="nx">Sequence</span></a><span class="p">,</span> <a href="https://pkg.go.dev/builtin#error"><span class="kt">error</span></a><span class="p">)</span></pre>
+  <p>FromProforma creates a Sequence object from a ProForma notation string.
+Supports all ProForma 2.0 features including multi-chain sequences (//),
+chimeric sequences (+), and all modification types.
+<h4 id="NewSequence">func NewSequence</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="nf">NewSequence</span><span class="p">(</span><span class="nx">seq</span> <span class="kd">interface</span><span class="p">{},</span> <span class="nx">mods</span> <span class="kd">map</span><span class="p">[</span><a href="https://pkg.go.dev/builtin#int"><span class="kt">int</span></a><span class="p">][]</span><span class="o">*</span><a href="#Modification"><span class="nx">Modification</span></a><span class="p">,</span> <span class="nx">parse</span> <a href="https://pkg.go.dev/builtin#bool"><span class="kt">bool</span></a><span class="p">,</span>
+	<span class="nx">modPosition</span> <a href="https://pkg.go.dev/builtin#string"><span class="kt">string</span></a><span class="p">,</span> <span class="nx">chains</span> <span class="p">[]</span><span class="o">*</span><a href="#Sequence"><span class="nx">Sequence</span></a><span class="p">,</span> <span class="nx">globalMods</span> <span class="p">[]</span><span class="o">*</span><a href="#GlobalModification"><span class="nx">GlobalModification</span></a><span class="p">,</span>
+	<span class="nx">sequenceAmbiguities</span> <span class="p">[]</span><span class="o">*</span><a href="#SequenceAmbiguity"><span class="nx">SequenceAmbiguity</span></a><span class="p">,</span> <span class="nx">charge</span> <span class="o">*</span><a href="https://pkg.go.dev/builtin#int"><span class="kt">int</span></a><span class="p">,</span> <span class="nx">ionicSpecies</span> <span class="o">*</span><a href="https://pkg.go.dev/builtin#string"><span class="kt">string</span></a><span class="p">,</span>
+	<span class="nx">peptidoformName</span> <span class="o">*</span><a href="https://pkg.go.dev/builtin#string"><span class="kt">string</span></a><span class="p">,</span> <span class="nx">peptidoformIonName</span> <span class="o">*</span><a href="https://pkg.go.dev/builtin#string"><span class="kt">string</span></a><span class="p">,</span> <span class="nx">compoundIonName</span> <span class="o">*</span><a href="https://pkg.go.dev/builtin#string"><span class="kt">string</span></a><span class="p">)</span> <span class="o">*</span><a href="#Sequence"><span class="nx">Sequence</span></a></pre>
+  <p>NewSequence creates a new Sequence instance with the specified parameters.
+The seq parameter can be a string or other sequence representation.
+If parse is true, the sequence will be parsed according to modPosition (&quot;left&quot; or &quot;right&quot;).
+<h4 id="Sequence.AddModifications">func (*Sequence) AddModifications</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">s</span> <span class="o">*</span><a href="#Sequence"><span class="nx">Sequence</span></a><span class="p">)</span> <span class="nf">AddModifications</span><span class="p">(</span><span class="nx">modDict</span> <span class="kd">map</span><span class="p">[</span><a href="https://pkg.go.dev/builtin#int"><span class="kt">int</span></a><span class="p">][]</span><span class="o">*</span><a href="#Modification"><span class="nx">Modification</span></a><span class="p">)</span></pre>
+  <p>AddModifications adds modifications to residues at specified positions
+<h4 id="Sequence.Count">func (*Sequence) Count</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">s</span> <span class="o">*</span><a href="#Sequence"><span class="nx">Sequence</span></a><span class="p">)</span> <span class="nf">Count</span><span class="p">(</span><span class="nx">char</span> <a href="https://pkg.go.dev/builtin#string"><span class="kt">string</span></a><span class="p">,</span> <span class="nx">start</span><span class="p">,</span> <span class="nx">end</span> <a href="https://pkg.go.dev/builtin#int"><span class="kt">int</span></a><span class="p">)</span> <a href="https://pkg.go.dev/builtin#int"><span class="kt">int</span></a></pre>
+  <p>Count counts occurrences of a character in a range
+<h4 id="Sequence.Equal">func (*Sequence) Equal</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">s</span> <span class="o">*</span><a href="#Sequence"><span class="nx">Sequence</span></a><span class="p">)</span> <span class="nf">Equal</span><span class="p">(</span><span class="nx">other</span> <span class="o">*</span><a href="#Sequence"><span class="nx">Sequence</span></a><span class="p">)</span> <a href="https://pkg.go.dev/builtin#bool"><span class="kt">bool</span></a></pre>
+  <p>Equal checks if two sequences are equal
+<h4 id="Sequence.FindWithRegex">func (*Sequence) FindWithRegex</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">s</span> <span class="o">*</span><a href="#Sequence"><span class="nx">Sequence</span></a><span class="p">)</span> <span class="nf">FindWithRegex</span><span class="p">(</span><span class="nx">motif</span> <a href="https://pkg.go.dev/builtin#string"><span class="kt">string</span></a><span class="p">,</span> <span class="nx">ignore</span> <span class="p">[]</span><a href="https://pkg.go.dev/builtin#bool"><span class="kt">bool</span></a><span class="p">)</span> <span class="p">([][]</span><a href="https://pkg.go.dev/builtin#int"><span class="kt">int</span></a><span class="p">,</span> <a href="https://pkg.go.dev/builtin#error"><span class="kt">error</span></a><span class="p">)</span></pre>
+  <p>FindWithRegex finds positions in the sequence that match a given regex motif
+<h4 id="Sequence.Gaps">func (*Sequence) Gaps</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">s</span> <span class="o">*</span><a href="#Sequence"><span class="nx">Sequence</span></a><span class="p">)</span> <span class="nf">Gaps</span><span class="p">()</span> <span class="p">[]</span><a href="https://pkg.go.dev/builtin#bool"><span class="kt">bool</span></a></pre>
+  <p>Gaps identifies gaps in the sequence
+<h4 id="Sequence.GetChains">func (*Sequence) GetChains</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">s</span> <span class="o">*</span><a href="#Sequence"><span class="nx">Sequence</span></a><span class="p">)</span> <span class="nf">GetChains</span><span class="p">()</span> <span class="p">[]</span><span class="o">*</span><a href="#Sequence"><span class="nx">Sequence</span></a></pre>
+  <p>GetChains returns the chains for multi-chain sequences
+<h4 id="Sequence.GetCharge">func (*Sequence) GetCharge</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">s</span> <span class="o">*</span><a href="#Sequence"><span class="nx">Sequence</span></a><span class="p">)</span> <span class="nf">GetCharge</span><span class="p">()</span> <span class="o">*</span><a href="https://pkg.go.dev/builtin#int"><span class="kt">int</span></a></pre>
+  <p>GetCharge returns the charge state
+<h4 id="Sequence.GetCompoundIonName">func (*Sequence) GetCompoundIonName</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">s</span> <span class="o">*</span><a href="#Sequence"><span class="nx">Sequence</span></a><span class="p">)</span> <span class="nf">GetCompoundIonName</span><span class="p">()</span> <span class="o">*</span><a href="https://pkg.go.dev/builtin#string"><span class="kt">string</span></a></pre>
+  <p>GetCompoundIonName returns the compound ion name for chimeric spectra (ProForma 2.1)
+<h4 id="Sequence.GetGlobalMods">func (*Sequence) GetGlobalMods</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">s</span> <span class="o">*</span><a href="#Sequence"><span class="nx">Sequence</span></a><span class="p">)</span> <span class="nf">GetGlobalMods</span><span class="p">()</span> <span class="p">[]</span><span class="o">*</span><a href="#GlobalModification"><span class="nx">GlobalModification</span></a></pre>
+  <p>GetGlobalMods returns the global modifications
+<h4 id="Sequence.GetIonicSpecies">func (*Sequence) GetIonicSpecies</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">s</span> <span class="o">*</span><a href="#Sequence"><span class="nx">Sequence</span></a><span class="p">)</span> <span class="nf">GetIonicSpecies</span><span class="p">()</span> <span class="o">*</span><a href="https://pkg.go.dev/builtin#string"><span class="kt">string</span></a></pre>
+  <p>GetIonicSpecies returns the ionic species
+<h4 id="Sequence.GetItem">func (*Sequence) GetItem</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">s</span> <span class="o">*</span><a href="#Sequence"><span class="nx">Sequence</span></a><span class="p">)</span> <span class="nf">GetItem</span><span class="p">(</span><span class="nx">key</span> <span class="kd">interface</span><span class="p">{})</span> <span class="kd">interface</span><span class="p">{}</span></pre>
+  <p>GetItem returns an amino acid at the specified position or a slice
+<h4 id="Sequence.GetLength">func (*Sequence) GetLength</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">s</span> <span class="o">*</span><a href="#Sequence"><span class="nx">Sequence</span></a><span class="p">)</span> <span class="nf">GetLength</span><span class="p">()</span> <a href="https://pkg.go.dev/builtin#int"><span class="kt">int</span></a></pre>
+  <p>GetLength returns the length of the sequence
+<h4 id="Sequence.GetMods">func (*Sequence) GetMods</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">s</span> <span class="o">*</span><a href="#Sequence"><span class="nx">Sequence</span></a><span class="p">)</span> <span class="nf">GetMods</span><span class="p">()</span> <span class="kd">map</span><span class="p">[</span><a href="https://pkg.go.dev/builtin#int"><span class="kt">int</span></a><span class="p">][]</span><span class="o">*</span><a href="#Modification"><span class="nx">Modification</span></a></pre>
+  <p>GetMods returns the modifications map
+<h4 id="Sequence.GetPeptidoformIonName">func (*Sequence) GetPeptidoformIonName</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">s</span> <span class="o">*</span><a href="#Sequence"><span class="nx">Sequence</span></a><span class="p">)</span> <span class="nf">GetPeptidoformIonName</span><span class="p">()</span> <span class="o">*</span><a href="https://pkg.go.dev/builtin#string"><span class="kt">string</span></a></pre>
+  <p>GetPeptidoformIonName returns the peptidoform ion name (ProForma 2.1)
+<h4 id="Sequence.GetPeptidoformName">func (*Sequence) GetPeptidoformName</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">s</span> <span class="o">*</span><a href="#Sequence"><span class="nx">Sequence</span></a><span class="p">)</span> <span class="nf">GetPeptidoformName</span><span class="p">()</span> <span class="o">*</span><a href="https://pkg.go.dev/builtin#string"><span class="kt">string</span></a></pre>
+  <p>GetPeptidoformName returns the peptidoform name (ProForma 2.1)
+<h4 id="Sequence.GetPeptidoforms">func (*Sequence) GetPeptidoforms</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">s</span> <span class="o">*</span><a href="#Sequence"><span class="nx">Sequence</span></a><span class="p">)</span> <span class="nf">GetPeptidoforms</span><span class="p">()</span> <span class="p">[]</span><span class="o">*</span><a href="#Sequence"><span class="nx">Sequence</span></a></pre>
+  <p>GetPeptidoforms returns the peptidoforms for chimeric sequences
+<h4 id="Sequence.GetSeq">func (*Sequence) GetSeq</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">s</span> <span class="o">*</span><a href="#Sequence"><span class="nx">Sequence</span></a><span class="p">)</span> <span class="nf">GetSeq</span><span class="p">()</span> <span class="p">[]</span><span class="o">*</span><a href="#AminoAcid"><span class="nx">AminoAcid</span></a></pre>
+  <p>GetSeq returns the amino acid sequence
+<h4 id="Sequence.GetSequenceAmbiguities">func (*Sequence) GetSequenceAmbiguities</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">s</span> <span class="o">*</span><a href="#Sequence"><span class="nx">Sequence</span></a><span class="p">)</span> <span class="nf">GetSequenceAmbiguities</span><span class="p">()</span> <span class="p">[]</span><span class="o">*</span><a href="#SequenceAmbiguity"><span class="nx">SequenceAmbiguity</span></a></pre>
+  <p>GetSequenceAmbiguities returns the sequence ambiguities
+<h4 id="Sequence.IsChimeric">func (*Sequence) IsChimeric</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">s</span> <span class="o">*</span><a href="#Sequence"><span class="nx">Sequence</span></a><span class="p">)</span> <span class="nf">IsChimeric</span><span class="p">()</span> <a href="https://pkg.go.dev/builtin#bool"><span class="kt">bool</span></a></pre>
+  <p>IsChimeric returns whether the sequence is chimeric
+<h4 id="Sequence.IsMultiChain">func (*Sequence) IsMultiChain</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">s</span> <span class="o">*</span><a href="#Sequence"><span class="nx">Sequence</span></a><span class="p">)</span> <span class="nf">IsMultiChain</span><span class="p">()</span> <a href="https://pkg.go.dev/builtin#bool"><span class="kt">bool</span></a></pre>
+  <p>IsMultiChain returns whether the sequence is multi-chain
+<h4 id="Sequence.SetCharge">func (*Sequence) SetCharge</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">s</span> <span class="o">*</span><a href="#Sequence"><span class="nx">Sequence</span></a><span class="p">)</span> <span class="nf">SetCharge</span><span class="p">(</span><span class="nx">charge</span> <span class="o">*</span><a href="https://pkg.go.dev/builtin#int"><span class="kt">int</span></a><span class="p">)</span></pre>
+  <p>SetCharge sets the charge state
+<h4 id="Sequence.SetIonicSpecies">func (*Sequence) SetIonicSpecies</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">s</span> <span class="o">*</span><a href="#Sequence"><span class="nx">Sequence</span></a><span class="p">)</span> <span class="nf">SetIonicSpecies</span><span class="p">(</span><span class="nx">species</span> <span class="o">*</span><a href="https://pkg.go.dev/builtin#string"><span class="kt">string</span></a><span class="p">)</span></pre>
+  <p>SetIonicSpecies sets the ionic species
+<h4 id="Sequence.String">func (*Sequence) String</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">s</span> <span class="o">*</span><a href="#Sequence"><span class="nx">Sequence</span></a><span class="p">)</span> <span class="nf">String</span><span class="p">()</span> <a href="https://pkg.go.dev/builtin#string"><span class="kt">string</span></a></pre>
+  <p>String returns a string representation of the sequence
+<h4 id="Sequence.ToMap">func (*Sequence) ToMap</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">s</span> <span class="o">*</span><a href="#Sequence"><span class="nx">Sequence</span></a><span class="p">)</span> <span class="nf">ToMap</span><span class="p">()</span> <span class="kd">map</span><span class="p">[</span><a href="https://pkg.go.dev/builtin#string"><span class="kt">string</span></a><span class="p">]</span><span class="kd">interface</span><span class="p">{}</span></pre>
+  <p>ToMap converts the sequence to a map representation
+<h4 id="Sequence.ToProforma">func (*Sequence) ToProforma</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">s</span> <span class="o">*</span><a href="#Sequence"><span class="nx">Sequence</span></a><span class="p">)</span> <span class="nf">ToProforma</span><span class="p">()</span> <a href="https://pkg.go.dev/builtin#string"><span class="kt">string</span></a></pre>
+  <p>ToProforma converts the sequence to ProForma format
+<h4 id="Sequence.ToStrippedString">func (*Sequence) ToStrippedString</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">s</span> <span class="o">*</span><a href="#Sequence"><span class="nx">Sequence</span></a><span class="p">)</span> <span class="nf">ToStrippedString</span><span class="p">()</span> <a href="https://pkg.go.dev/builtin#string"><span class="kt">string</span></a></pre>
+  <p>ToStrippedString returns the sequence as a string without any modification annotations
+<h3 id="SequenceAmbiguity">type SequenceAmbiguity</h3>
+    <pre class="chroma"><span class="kd">type</span> <span class="nx">SequenceAmbiguity</span> <span class="kd">struct</span> <span class="p">{</span>
+	<span id="SequenceAmbiguity.Value"><span class="nx">Value</span></span>    <a href="https://pkg.go.dev/builtin#string"><span class="kt">string</span></a>
+	<span id="SequenceAmbiguity.Position"><span class="nx">Position</span></span> <a href="https://pkg.go.dev/builtin#int"><span class="kt">int</span></a>
+<span class="p">}</span></pre>
+    <p>SequenceAmbiguity represents ambiguity in the amino acid sequence
+<h4 id="NewSequenceAmbiguity">func NewSequenceAmbiguity</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="nf">NewSequenceAmbiguity</span><span class="p">(</span><span class="nx">value</span> <a href="https://pkg.go.dev/builtin#string"><span class="kt">string</span></a><span class="p">,</span> <span class="nx">position</span> <a href="https://pkg.go.dev/builtin#int"><span class="kt">int</span></a><span class="p">)</span> <span class="o">*</span><a href="#SequenceAmbiguity"><span class="nx">SequenceAmbiguity</span></a></pre>
+  <p>NewSequenceAmbiguity creates a new SequenceAmbiguity instance
+<h4 id="SequenceAmbiguity.GetPosition">func (*SequenceAmbiguity) GetPosition</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">sa</span> <span class="o">*</span><a href="#SequenceAmbiguity"><span class="nx">SequenceAmbiguity</span></a><span class="p">)</span> <span class="nf">GetPosition</span><span class="p">()</span> <a href="https://pkg.go.dev/builtin#int"><span class="kt">int</span></a></pre>
+  <p>GetPosition returns the position of the ambiguity
+<h4 id="SequenceAmbiguity.GetValue">func (*SequenceAmbiguity) GetValue</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">sa</span> <span class="o">*</span><a href="#SequenceAmbiguity"><span class="nx">SequenceAmbiguity</span></a><span class="p">)</span> <span class="nf">GetValue</span><span class="p">()</span> <a href="https://pkg.go.dev/builtin#string"><span class="kt">string</span></a></pre>
+  <p>GetValue returns the ambiguous sequence value
+<h4 id="SequenceAmbiguity.String">func (*SequenceAmbiguity) String</h4>
+  <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">sa</span> <span class="o">*</span><a href="#SequenceAmbiguity"><span class="nx">SequenceAmbiguity</span></a><span class="p">)</span> <span class="nf">String</span><span class="p">()</span> <a href="https://pkg.go.dev/builtin#string"><span class="kt">string</span></a></pre>
+  <p>String returns a string representation of the sequence ambiguity
+<h3 id="SequenceBlock">type SequenceBlock</h3>
+    <pre class="chroma"><span class="kd">type</span> <span class="nx">SequenceBlock</span> <span class="kd">struct</span> <span class="p">{</span>
+	<span id="SequenceBlock.Value"><span class="nx">Value</span></span> <a href="https://pkg.go.dev/builtin#string"><span class="kt">string</span></a>
+	<span id="SequenceBlock.IsMod"><span class="nx">IsMod</span></span> <a href="https://pkg.go.dev/builtin#bool"><span class="kt">bool</span></a>
+<span class="p">}</span></pre>
+    <p>SequenceBlock represents a parsed block from sequence iteration
+</main>
+    <hr>
+    <footer>
+      <small id="generated-by-footer">
+        Generated with <a href="https://abhinav.github.io/doc2go/">doc2go</a>
+      </small>
+    </footer>
+    <script src="../../../../_/js/permalink.js"></script></body>
+</html>
