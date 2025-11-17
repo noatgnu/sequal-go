@@ -23,7 +23,6 @@ jobs:
       - name: Generate docs
         run: |
           mkdir -p docs
-          
           /home/runner/go/bin/doc2go -out docs/ ./sequal
 
       - name: Deploy
