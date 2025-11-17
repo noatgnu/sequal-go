@@ -1,3 +1,5 @@
+// Package sequal provides a library for parsing and generating ProForma 2.1 strings.
+// This file contains constants and data maps used throughout the library.
 package sequal
 
 // Atomic mass constants

@@ -55,7 +55,7 @@ func TestAminoAcidCreation(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			aa, err := NewAminoAcid(tt.value, tt.position, tt.mass)
-			
+
 			if tt.shouldError {
 				if err == nil {
 					t.Errorf("Expected error for unknown amino acid without mass, but got none")
@@ -105,8 +105,9 @@ func TestAminoAcidModifications(t *testing.T) {
 
 	// Add a modification
 	phosphoMod := NewModification("Phospho", nil, nil, nil, "static", false, 0, 79.966, false,
-		nil, false, false, false, nil, false, false, nil, nil, nil, nil)
-	
+		nil, false, false, false, nil, false, false, nil, nil, nil, nil,
+		nil, nil, false, false, false)
+
 	aa.AddModification(phosphoMod)
 
 	// Check modification was added
@@ -135,8 +136,9 @@ func TestAminoAcidModifications(t *testing.T) {
 
 	// Add another modification
 	acetylMod := NewModification("Acetyl", nil, nil, nil, "static", false, 0, 42.011, false,
-		nil, false, false, false, nil, false, false, nil, nil, nil, nil)
-	
+		nil, false, false, false, nil, false, false, nil, nil, nil, nil,
+		nil, nil, false, false, false)
+
 	aa.AddModification(acetylMod)
 
 	mods = aa.GetMods()
@@ -153,10 +155,12 @@ func TestAminoAcidRemoveModifications(t *testing.T) {
 
 	// Add modifications
 	phosphoMod := NewModification("Phospho", nil, nil, nil, "static", false, 0, 79.966, false,
-		nil, false, false, false, nil, false, false, nil, nil, nil, nil)
+		nil, false, false, false, nil, false, false, nil, nil, nil, nil,
+		nil, nil, false, false, false)
 	acetylMod := NewModification("Acetyl", nil, nil, nil, "static", false, 0, 42.011, false,
-		nil, false, false, false, nil, false, false, nil, nil, nil, nil)
-	
+		nil, false, false, false, nil, false, false, nil, nil, nil, nil,
+		nil, nil, false, false, false)
+
 	aa.AddModification(phosphoMod)
 	aa.AddModification(acetylMod)
 
@@ -210,7 +214,8 @@ func TestAminoAcidTotalMass(t *testing.T) {
 
 	// Add modifications with mass
 	phosphoMod := NewModification("Phospho", nil, nil, nil, "static", false, 0, 79.966, false,
-		nil, false, false, false, nil, false, false, nil, nil, nil, nil)
+		nil, false, false, false, nil, false, false, nil, nil, nil, nil,
+		nil, nil, false, false, false)
 	aa.AddModification(phosphoMod)
 
 	expectedTotalMass := expectedInitialMass + 79.966
@@ -221,7 +226,8 @@ func TestAminoAcidTotalMass(t *testing.T) {
 
 	// Add another modification
 	acetylMod := NewModification("Acetyl", nil, nil, nil, "static", false, 0, 42.011, false,
-		nil, false, false, false, nil, false, false, nil, nil, nil, nil)
+		nil, false, false, false, nil, false, false, nil, nil, nil, nil,
+		nil, nil, false, false, false)
 	aa.AddModification(acetylMod)
 
 	expectedTotalMass += 42.011
@@ -239,7 +245,8 @@ func TestAminoAcidToMap(t *testing.T) {
 
 	// Add a modification
 	phosphoMod := NewModification("Phospho", nil, nil, nil, "static", false, 0, 79.966, false,
-		nil, false, false, false, nil, false, false, nil, nil, nil, nil)
+		nil, false, false, false, nil, false, false, nil, nil, nil, nil,
+		nil, nil, false, false, false)
 	aa.AddModification(phosphoMod)
 
 	aaMap := aa.ToMap()
@@ -291,9 +298,11 @@ func TestAminoAcidEquality(t *testing.T) {
 
 	// Add modifications and test equality
 	phosphoMod1 := NewModification("Phospho", nil, nil, nil, "static", false, 0, 79.966, false,
-		nil, false, false, false, nil, false, false, nil, nil, nil, nil)
+		nil, false, false, false, nil, false, false, nil, nil, nil, nil,
+		nil, nil, false, false, false)
 	phosphoMod2 := NewModification("Phospho", nil, nil, nil, "static", false, 0, 79.966, false,
-		nil, false, false, false, nil, false, false, nil, nil, nil, nil)
+		nil, false, false, false, nil, false, false, nil, nil, nil, nil,
+		nil, nil, false, false, false)
 
 	aa1.AddModification(phosphoMod1)
 	aa2.AddModification(phosphoMod2)
@@ -304,7 +313,8 @@ func TestAminoAcidEquality(t *testing.T) {
 
 	// Add different modification to one
 	acetylMod := NewModification("Acetyl", nil, nil, nil, "static", false, 0, 42.011, false,
-		nil, false, false, false, nil, false, false, nil, nil, nil, nil)
+		nil, false, false, false, nil, false, false, nil, nil, nil, nil,
+		nil, nil, false, false, false)
 	aa2.AddModification(acetylMod)
 
 	if aa1.Equal(aa2) {
@@ -326,7 +336,8 @@ func TestAminoAcidString(t *testing.T) {
 
 	// With modifications
 	phosphoMod := NewModification("Phospho", nil, nil, nil, "static", false, 0, 79.966, false,
-		nil, false, false, false, nil, false, false, nil, nil, nil, nil)
+		nil, false, false, false, nil, false, false, nil, nil, nil, nil,
+		nil, nil, false, false, false)
 	aa.AddModification(phosphoMod)
 
 	str = aa.String()
@@ -337,7 +348,8 @@ func TestAminoAcidString(t *testing.T) {
 
 	// With multiple modifications
 	acetylMod := NewModification("Acetyl", nil, nil, nil, "static", false, 0, 42.011, false,
-		nil, false, false, false, nil, false, false, nil, nil, nil, nil)
+		nil, false, false, false, nil, false, false, nil, nil, nil, nil,
+		nil, nil, false, false, false)
 	aa.AddModification(acetylMod)
 
 	str = aa.String()
@@ -385,7 +397,7 @@ func TestAminoAcidDebugString(t *testing.T) {
 	}
 
 	debugStr := aa.ToDebugString()
-	
+
 	// Should contain value, position, and modification info
 	if !containsString(debugStr, "S") {
 		t.Errorf("Expected debug string to contain 'S', got '%s'", debugStr)
@@ -406,8 +418,9 @@ func TestSetModification(t *testing.T) {
 	}
 
 	phosphoMod := NewModification("Phospho", nil, nil, nil, "static", false, 0, 79.966, false,
-		nil, false, false, false, nil, false, false, nil, nil, nil, nil)
-	
+		nil, false, false, false, nil, false, false, nil, nil, nil, nil,
+		nil, nil, false, false, false)
+
 	aa.SetModification(phosphoMod)
 
 	mods := aa.GetMods()

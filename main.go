@@ -6,6 +6,9 @@ import (
 )
 
 func main() {
+	// Example of using the sequal library
+	// Sequal is a library for parsing and generating ProForma 2.1 strings.
+	// For more information, see the documentation at https://github.com/noatgnu/sequal-go
 	fmt.Println("Sequal - Go ProForma Library")
 	fmt.Println("============================")
 
@@ -17,7 +20,7 @@ func main() {
 		"PEPTIDE/2",
 		"PEPTIDE/2[+Na+]",
 		"<[Carbamidomethyl]@C>PEPTCDE",
-		"PEPTIDE/2+ANOTHER/3", // Chimeric
+		"PEPTIDE/2+ANOTHER/3",          // Chimeric
 		"ELVIS[U:Phospho|+79.966331]K", // Complex modification
 	}
 
@@ -26,7 +29,7 @@ func main() {
 
 	for _, proforma := range examples {
 		fmt.Printf("\nProForma: %s\n", proforma)
-		
+
 		seq, err := sequal.FromProforma(proforma)
 		if err != nil {
 			fmt.Printf("Error: %v\n", err)
@@ -35,29 +38,29 @@ func main() {
 
 		fmt.Printf("Stripped sequence: %s\n", seq.ToStrippedString())
 		fmt.Printf("Length: %d\n", seq.GetLength())
-		
+
 		if charge := seq.GetCharge(); charge != nil {
 			fmt.Printf("Charge: %d\n", *charge)
 		}
-		
+
 		if species := seq.GetIonicSpecies(); species != nil {
 			fmt.Printf("Ionic species: %s\n", *species)
 		}
-		
+
 		if seq.IsChimeric() {
 			fmt.Printf("Chimeric peptidoforms: %d\n", len(seq.GetPeptidoforms()))
 		}
-		
+
 		if seq.IsMultiChain() {
 			fmt.Printf("Multi-chain sequences: %d\n", len(seq.GetChains()))
 		}
-		
+
 		// Show global modifications
 		globalMods := seq.GetGlobalMods()
 		if len(globalMods) > 0 {
 			fmt.Printf("Global modifications: %d\n", len(globalMods))
 		}
-		
+
 		// Regenerate ProForma
 		regenerated := seq.ToProforma()
 		fmt.Printf("Regenerated: %s\n", regenerated)

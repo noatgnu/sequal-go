@@ -41,6 +41,8 @@ type PipeValue struct {
 	isValidGlycan     bool
 	isValidFormula    bool
 	assignedTypes     []PipeValueType
+	charge            *string // ProForma 2.1: charge notation, e.g., "z+2", "z-1"
+	chargeValue       *int    // ProForma 2.1: numeric charge value, e.g., 2, -1
 }
 
 // NewPipeValue creates a new PipeValue instance
@@ -93,6 +95,27 @@ func (pv *PipeValue) extractProperties() {
 					pv.localizationScore = &score
 				}
 			}
+		}
+	}
+
+	// ProForma 2.1: Handle charged formulas (Section 11.1)
+	// Format: Formula:value:z+2 or Formula:value:z-1
+	if pv.valueType == PipeValueTypeFormula {
+		// Check for charge notation pattern :z+N or :z-N
+		re := regexp.MustCompile(`:z([+-]\d+)$`)
+		matches := re.FindStringSubmatch(pv.value)
+		if len(matches) > 1 {
+			// Extract the charge string (e.g., "z+2")
+			chargeStr := "z" + matches[1]
+			pv.charge = &chargeStr
+
+			// Extract the numeric charge value
+			if chargeVal, err := strconv.Atoi(matches[1]); err == nil {
+				pv.chargeValue = &chargeVal
+			}
+
+			// Remove the charge notation from the value
+			pv.value = re.ReplaceAllString(pv.value, "")
 		}
 	}
 }
@@ -196,4 +219,24 @@ func (pv *PipeValue) GetObservedMass() *float64 {
 // SetObservedMass sets the observed mass
 func (pv *PipeValue) SetObservedMass(mass float64) {
 	pv.observedMass = &mass
+}
+
+// GetCharge returns the charge notation (ProForma 2.1)
+func (pv *PipeValue) GetCharge() *string {
+	return pv.charge
+}
+
+// GetChargeValue returns the numeric charge value (ProForma 2.1)
+func (pv *PipeValue) GetChargeValue() *int {
+	return pv.chargeValue
+}
+
+// IsValidGlycan returns whether this is a valid glycan
+func (pv *PipeValue) IsValidGlycan() bool {
+	return pv.isValidGlycan
+}
+
+// IsValidFormula returns whether this is a valid formula
+func (pv *PipeValue) IsValidFormula() bool {
+	return pv.isValidFormula
 }

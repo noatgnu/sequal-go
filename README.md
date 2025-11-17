@@ -1,13 +1,20 @@
 # Sequal - Go ProForma Parser
 
-A Go implementation of a ProForma 2.0 peptide sequence notation parser. This library provides comprehensive support for parsing, manipulating, and generating ProForma notation strings for peptide and protein sequences.
+A Go implementation of a ProForma 2.1 peptide sequence notation parser. This library provides comprehensive support for parsing, manipulating, and generating ProForma notation strings for peptide and protein sequences.
 
 ## Features
 
-- **Complete ProForma 2.0 Support**: Parse and generate ProForma notation strings
+- **Complete ProForma 2.1 Support**: Parse and generate ProForma notation strings with all 2.1 enhancements
+- **ProForma 2.1 Features**:
+  - Charged formulas with charge notation (e.g., `Formula:Zn1:z+2`)
+  - Named entity definitions (e.g., `#g1:Glycan`)
+  - Custom monosaccharide definitions
+  - Terminal global modifications
+  - Placement controls: Position constraints, limits, colocalization tags
+  - Ion type notation for fragment ions
 - **Modification Handling**: Support for all modification types (static, ambiguous, labile, terminal)
 - **Charge States**: Handle charge information and ionic species
-- **Global Modifications**: Fixed modifications and isotope labeling
+- **Global Modifications**: Fixed modifications and isotope labeling with placement controls
 - **Complex Sequences**: Multi-chain, chimeric, and branched sequences
 - **Error Handling**: Comprehensive validation and error reporting
 - **Round-trip Conversion**: Parse ProForma → manipulate → regenerate ProForma
@@ -235,6 +242,122 @@ for i, pep := range peptidoforms {
 }
 ```
 
+## ProForma 2.1 Features
+
+### Charged Formulas
+
+```go
+// Charged formula with charge notation
+seq, _ := sequal.FromProforma("PEPT[Formula:Zn1:z+2]IDE")
+aa := seq.GetSeq()[3] // Get the 'T' amino acid
+mods := aa.GetMods()
+modValue := mods[0].GetModificationValue()
+
+// Access charged formula information
+for _, pv := range modValue.GetPipeValues() {
+    if pv.GetCharge() != nil {
+        fmt.Printf("Charge: %s\n", *pv.GetCharge()) // Output: z+2
+        fmt.Printf("Charge value: %d\n", *pv.GetChargeValue()) // Output: 2
+    }
+}
+
+// Multiple charged formulas
+seq, _ := sequal.FromProforma("PE[Formula:Cu1:z+1]PT[Formula:Zn1:z+2]IDE")
+```
+
+### Placement Controls
+
+```go
+// Position constraint on global modification
+seq, _ := sequal.FromProforma("<[Oxidation|Position:M]@M>PEPTMIDE")
+globalMod := seq.GetGlobalMods()[0]
+positions := globalMod.GetPositionConstraint()
+fmt.Printf("Positions: %v\n", positions) // Output: [M]
+
+// Multiple position constraints
+seq, _ := sequal.FromProforma("<[Phospho|Position:S,T,Y]@S,T,Y>PEPTIDES")
+globalMod = seq.GetGlobalMods()[0]
+positions = globalMod.GetPositionConstraint()
+fmt.Printf("Positions: %v\n", positions) // Output: [S T Y]
+
+// Limit per position
+seq, _ := sequal.FromProforma("<[Phospho|Limit:2]@S,T,Y>STYSTY")
+globalMod = seq.GetGlobalMods()[0]
+limit := globalMod.GetLimitPerPosition()
+fmt.Printf("Limit: %d\n", *limit) // Output: 2
+
+// Colocalize modifications of known position (CoMKP)
+seq, _ := sequal.FromProforma("<[Oxidation|CoMKP]@M>PEPTIDE")
+globalMod = seq.GetGlobalMods()[0]
+fmt.Printf("CoMKP: %t\n", globalMod.GetColocalizeKnown()) // Output: true
+
+// Colocalize modifications of unknown position (CoMUP)
+seq, _ := sequal.FromProforma("<[Oxidation|CoMUP]@M>PEPTIDE")
+globalMod = seq.GetGlobalMods()[0]
+fmt.Printf("CoMUP: %t\n", globalMod.GetColocalizeUnknown()) // Output: true
+
+// Combined placement controls
+seq, _ := sequal.FromProforma("<[Phospho|Position:S,T,Y|Limit:2|CoMKP]@S,T,Y>PEPTIDES")
+globalMod = seq.GetGlobalMods()[0]
+fmt.Printf("Positions: %v\n", globalMod.GetPositionConstraint()) // Output: [S T Y]
+fmt.Printf("Limit: %d\n", *globalMod.GetLimitPerPosition()) // Output: 2
+fmt.Printf("CoMKP: %t\n", globalMod.GetColocalizeKnown()) // Output: true
+```
+
+### Ion Type Notation
+
+```go
+// Fragment ion types
+seq, _ := sequal.FromProforma("PEPT[a-type-ion]IDE")
+aa := seq.GetSeq()[3] // Get the 'T' amino acid
+mods := aa.GetMods()
+fmt.Printf("Is ion type: %t\n", mods[0].IsIonType()) // Output: true
+
+// All supported ion types: a, b, c, x, y, z
+ionTypes := []string{
+    "PEPT[a-type-ion]IDE",
+    "PEPT[b-type-ion]IDE",
+    "PEPT[c-type-ion]IDE",
+    "PEPT[x-type-ion]IDE",
+    "PEPT[y-type-ion]IDE",
+    "PEPT[z-type-ion]IDE",
+}
+
+// Using Unimod ion references
+seq, _ := sequal.FromProforma("PEPT[UNIMOD:140]IDE") // a-type-ion
+aa = seq.GetSeq()[3]
+mods = aa.GetMods()
+fmt.Printf("Is ion type: %t\n", mods[0].IsIonType()) // Output: true
+
+// Short form Unimod reference
+seq, _ := sequal.FromProforma("PEPT[U:2132]IDE") // b-type-ion
+aa = seq.GetSeq()[3]
+mods = aa.GetMods()
+fmt.Printf("Is ion type: %t\n", mods[0].IsIonType()) // Output: true
+
+// Case insensitive
+seq, _ := sequal.FromProforma("PEPT[A-TYPE-ION]IDE")
+aa = seq.GetSeq()[3]
+mods = aa.GetMods()
+fmt.Printf("Is ion type: %t\n", mods[0].IsIonType()) // Output: true
+```
+
+### Complex ProForma 2.1 Combinations
+
+```go
+// Placement controls with ion notation
+seq, _ := sequal.FromProforma("<[Phospho|Position:S,T,Y|Limit:2]@S,T,Y>PEPT[a-type-ion]IDE")
+
+// Charged formulas with ion types
+seq, _ := sequal.FromProforma("PE[a-type-ion]PT[Formula:Zn1:z+2]IDE")
+
+// Multiple global modifications with placement controls
+seq, _ := sequal.FromProforma("<[Phospho|Position:S,T,Y|CoMKP]@S,T,Y><[Oxidation|Position:M|CoMUP]@M>STMYST")
+
+// Full feature combination
+seq, _ := sequal.FromProforma("<[Phospho|Position:S,T,Y|Limit:2|CoMKP]@S,T,Y>[Acetyl]-PE[a-type-ion]PT[Formula:Zn1:z+2]IDE")
+```
+
 ## Advanced Features
 
 ### Crosslinks and Branches
@@ -367,11 +490,17 @@ The tests cover:
 - Error handling
 - Round-trip conversion
 - Complex ProForma examples
+- ProForma 2.1 features:
+  - Charged formulas
+  - Placement controls (Position, Limit, CoMKP, CoMUP)
+  - Ion type notation
+  - Integration tests combining multiple 2.1 features
 
-## ProForma 2.0 Compliance
+## ProForma 2.1 Compliance
 
-This implementation follows the ProForma 2.0 specification and supports:
+This implementation follows the ProForma 2.1 specification and supports all ProForma 2.0 features plus new 2.1 enhancements:
 
+### ProForma 2.0 Features
 - Basic amino acid sequences
 - Static modifications `[mod]`
 - Ambiguous modifications `{mod}`
@@ -389,6 +518,20 @@ This implementation follows the ProForma 2.0 specification and supports:
 - Information tags `[mod|INFO:info]`
 - Multi-chain sequences `seq//seq`
 - Chimeric sequences `seq+seq`
+
+### ProForma 2.1 Enhancements
+- **Charged Formulas** (Section 11.1): `[Formula:Zn1:z+2]` - Formulas with charge notation
+- **Named Entity Definitions** (Section 11.3): `[#g1:Glycan]` - Named entity references
+- **Custom Monosaccharide Definitions** (Section 11.4): Custom glycan building blocks
+- **Terminal Global Modifications** (Section 11.5): Global modifications on termini
+- **Placement Controls** (Section 11.2): Advanced global modification constraints
+  - Position constraints: `[mod|Position:M]@M`
+  - Limit per position: `[mod|Limit:2]@S,T,Y`
+  - CoMKP (Colocalize with known positions): `[mod|CoMKP]@M`
+  - CoMUP (Colocalize with unknown positions): `[mod|CoMUP]@M`
+- **Ion Notation** (Section 11.6): Fragment ion type semantic flag
+  - Named ion types: `[a-type-ion]`, `[b-type-ion]`, `[c-type-ion]`, `[x-type-ion]`, `[y-type-ion]`, `[z-type-ion]`
+  - Unimod ion references: `[UNIMOD:140]`, `[U:2132]`
 
 ## Contributing
 

@@ -31,7 +31,7 @@ func NewProFormaParser() *ProFormaParser {
 
 // ParseProFormaResult contains all parsed components from a ProForma string
 // including the base sequence, modifications, global modifications, sequence ambiguities,
-// charge state, and ionic species information.
+// charge state, ionic species information, and named entities (ProForma 2.1).
 type ParseProFormaResult struct {
 	BaseSequence        string
 	Modifications       map[string][]*Modification
@@ -39,6 +39,9 @@ type ParseProFormaResult struct {
 	SequenceAmbiguities []*SequenceAmbiguity
 	Charge              *int
 	IonicSpecies        *string
+	PeptidoformName     *string
+	PeptidoformIonName  *string
+	CompoundIonName     *string
 }
 
 // ParseProForma parses a ProForma string and returns its basic components.
@@ -49,9 +52,43 @@ func ParseProForma(proformaStr string) (string, map[string][]*Modification, []*G
 }
 
 // ParseProFormaDetailed parses a ProForma string and returns a structured result
-// containing all parsed components including charge and ionic species information.
+// containing all parsed components including charge, ionic species, and named entities (ProForma 2.1).
 func ParseProFormaDetailed(proformaStr string) (*ParseProFormaResult, error) {
 	parser := NewProFormaParser()
+
+	// Extract named entities before parsing (ProForma 2.1)
+	var compoundIonName, peptidoformIonName, peptidoformName *string
+	originalStr := proformaStr
+
+	// Extract compound ion name (>>>name)
+	if strings.HasPrefix(originalStr, "(>>>") {
+		end := parser.findBalancedParen(originalStr, 4)
+		if end > 0 {
+			name := originalStr[4 : end-1]
+			compoundIonName = &name
+			originalStr = originalStr[end:]
+		}
+	}
+
+	// Extract peptidoform ion name (>>name)
+	if strings.HasPrefix(originalStr, "(>>") {
+		end := parser.findBalancedParen(originalStr, 3)
+		if end > 0 {
+			name := originalStr[3 : end-1]
+			peptidoformIonName = &name
+			originalStr = originalStr[end:]
+		}
+	}
+
+	// Extract peptidoform name (>name)
+	if strings.HasPrefix(originalStr, "(>") {
+		end := parser.findBalancedParen(originalStr, 2)
+		if end > 0 {
+			name := originalStr[2 : end-1]
+			peptidoformName = &name
+		}
+	}
+
 	baseSeq, mods, globalMods, seqAmbig, chargeInfo, err := parser.Parse(proformaStr)
 	if err != nil {
 		return nil, err
@@ -62,6 +99,9 @@ func ParseProFormaDetailed(proformaStr string) (*ParseProFormaResult, error) {
 		Modifications:       mods,
 		GlobalMods:          globalMods,
 		SequenceAmbiguities: seqAmbig,
+		PeptidoformName:     peptidoformName,
+		PeptidoformIonName:  peptidoformIonName,
+		CompoundIonName:     compoundIonName,
 	}
 
 	if len(chargeInfo) > 0 {
@@ -80,14 +120,82 @@ func ParseProFormaDetailed(proformaStr string) (*ParseProFormaResult, error) {
 	return result, nil
 }
 
+// findBalancedParen finds the index of the closing parenthesis that balances the opening
+// parenthesis at position start-1, accounting for nested parentheses (ProForma 2.1).
+// Returns the index after the closing paren, or -1 if no balanced paren is found.
+func (p *ProFormaParser) findBalancedParen(s string, start int) int {
+	count := 1
+	i := start
+	for i < len(s) && count > 0 {
+		if s[i] == '(' {
+			count++
+		} else if s[i] == ')' {
+			count--
+		}
+		i++
+	}
+	if count == 0 {
+		return i
+	}
+	return -1
+}
+
+// findBalancedAngleBracket finds the matching closing angle bracket for a global modification
+// ProForma 2.1: Handles > in modification names like Gln->pyro-Glu
+func (p *ProFormaParser) findBalancedAngleBracket(s string, start int) int {
+	// For global modifications, we need to skip over square brackets
+	// Format: <[ModName]@Targets>
+	i := start
+	inSquareBrackets := false
+
+	for i < len(s) {
+		if s[i] == '[' {
+			inSquareBrackets = true
+		} else if s[i] == ']' {
+			inSquareBrackets = false
+		} else if s[i] == '>' && !inSquareBrackets {
+			return i + 1 // Return position after the >
+		}
+		i++
+	}
+	return -1
+}
+
 // Parse parses a ProForma string into its constituent parts and returns the base sequence,
 // modifications map, global modifications, sequence ambiguities, and charge information.
-// This is the main parsing method that handles all ProForma 2.0 notation elements.
+// This is the main parsing method that handles all ProForma 2.1 notation elements.
 func (p *ProFormaParser) Parse(proformaStr string) (string, map[string][]*Modification, []*GlobalModification, []*SequenceAmbiguity, []*int, error) {
 	baseSequence := ""
 	modifications := make(map[string][]*Modification)
 	globalMods := make([]*GlobalModification, 0)
 	sequenceAmbiguities := make([]*SequenceAmbiguity, 0)
+
+	// Extract named entities (ProForma 2.1 Section 8.2) - strip from input but don't return
+	// (names are extracted separately in ParseProFormaDetailed)
+
+	// Extract compound ion name (>>>name)
+	if strings.HasPrefix(proformaStr, "(>>>") {
+		end := p.findBalancedParen(proformaStr, 4)
+		if end > 0 {
+			proformaStr = proformaStr[end:]
+		}
+	}
+
+	// Extract peptidoform ion name (>>name)
+	if strings.HasPrefix(proformaStr, "(>>") {
+		end := p.findBalancedParen(proformaStr, 3)
+		if end > 0 {
+			proformaStr = proformaStr[end:]
+		}
+	}
+
+	// Extract peptidoform name (>name)
+	if strings.HasPrefix(proformaStr, "(>") {
+		end := p.findBalancedParen(proformaStr, 2)
+		if end > 0 {
+			proformaStr = proformaStr[end:]
+		}
+	}
 
 	getModsAtPosition := func(pos int) []*Modification {
 		posStr := strconv.Itoa(pos)
@@ -104,13 +212,14 @@ func (p *ProFormaParser) Parse(proformaStr string) (string, map[string][]*Modifi
 
 	// Parse global modifications
 	for strings.HasPrefix(proformaStr, "<") {
-		endBracket := strings.Index(proformaStr, ">")
+		// Find balanced closing > (to handle > in modification names like Gln->pyro-Glu)
+		endBracket := p.findBalancedAngleBracket(proformaStr, 1)
 		if endBracket == -1 {
 			return "", nil, nil, nil, nil, fmt.Errorf("unclosed global modification angle bracket")
 		}
 
-		globalModStr := proformaStr[1:endBracket]
-		proformaStr = proformaStr[endBracket+1:]
+		globalModStr := proformaStr[1 : endBracket-1]
+		proformaStr = proformaStr[endBracket:]
 
 		if strings.Contains(globalModStr, "@") {
 			// Fixed protein modification
@@ -126,11 +235,39 @@ func (p *ProFormaParser) Parse(proformaStr string) (string, map[string][]*Modifi
 				modValue = modPart[1 : len(modPart)-1]
 			}
 
+			// ProForma 2.1: Parse placement control tags (Section 11.2)
+			var positionConstraint []string
+			var limitPerPosition *int
+			colocalizeKnown := false
+			colocalizeUnknown := false
+
+			if strings.Contains(modValue, "|") {
+				modParts := strings.Split(modValue, "|")
+				modValue = modParts[0] // First part is the modification name
+
+				// Parse control tags
+				for _, part := range modParts[1:] {
+					if strings.HasPrefix(part, "Position:") {
+						positions := strings.TrimPrefix(part, "Position:")
+						positionConstraint = strings.Split(positions, ",")
+					} else if strings.HasPrefix(part, "Limit:") {
+						limitStr := strings.TrimPrefix(part, "Limit:")
+						if limit, err := strconv.Atoi(limitStr); err == nil {
+							limitPerPosition = &limit
+						}
+					} else if part == "CoMKP" || part == "ColocaliseModificationsOfKnownPosition" {
+						colocalizeKnown = true
+					} else if part == "CoMUP" || part == "ColocaliseModificationsOfUnknownPosition" {
+						colocalizeUnknown = true
+					}
+				}
+			}
+
 			targetResidues := strings.Split(targets, ",")
-			globalMods = append(globalMods, NewGlobalModification(modValue, targetResidues, "fixed"))
+			globalMods = append(globalMods, NewGlobalModification(modValue, targetResidues, "fixed", positionConstraint, limitPerPosition, colocalizeKnown, colocalizeUnknown))
 		} else {
 			// Isotope labeling
-			globalMods = append(globalMods, NewGlobalModification(globalModStr, nil, "isotope"))
+			globalMods = append(globalMods, NewGlobalModification(globalModStr, nil, "isotope", nil, nil, false, false))
 		}
 	}
 
@@ -552,6 +689,12 @@ func (p *ProFormaParser) createModification(modStr string, options map[string]in
 		}
 	}
 
+	// ProForma 2.1: Placement controls are only for global modifications, not regular ones
+	var positionConstraint []string
+	var limitPerPosition *int
+	colocalizeKnown := false
+	colocalizeUnknown := false
+
 	modValue := NewModificationValue(modStr, nil)
 	modType := "static"
 
@@ -577,13 +720,16 @@ func (p *ProFormaParser) createModification(modStr string, options map[string]in
 		modValueForMassShift := NewModificationValue("Mass:"+modStr, &massValue)
 		if isGap {
 			return NewModification(modStr, nil, nil, nil, "gap", false, 0, massValue, false,
-				nil, false, false, false, nil, false, inRange, rangeStart, rangeEnd, nil, modValueForMassShift)
+				nil, false, false, false, nil, false, inRange, rangeStart, rangeEnd, nil, modValueForMassShift,
+				positionConstraint, limitPerPosition, colocalizeKnown, colocalizeUnknown, p.isIonTypeModification(modStr))
 		} else if inRange {
 			return NewModification(modStr, nil, nil, nil, "variable", false, 0, massValue, false,
-				nil, false, false, false, nil, false, true, rangeStart, rangeEnd, nil, modValueForMassShift)
+				nil, false, false, false, nil, false, true, rangeStart, rangeEnd, nil, modValueForMassShift,
+				positionConstraint, limitPerPosition, colocalizeKnown, colocalizeUnknown, p.isIonTypeModification(modStr))
 		}
 		return NewModification("Mass:"+modStr, nil, nil, nil, modType, isLabile, 0, massValue, false,
-			nil, false, false, false, nil, false, inRange, rangeStart, rangeEnd, nil, modValueForMassShift)
+			nil, false, false, false, nil, false, inRange, rangeStart, rangeEnd, nil, modValueForMassShift,
+			positionConstraint, limitPerPosition, colocalizeKnown, colocalizeUnknown, p.isIonTypeModification(modStr))
 	}
 
 	// Handle ambiguity patterns
@@ -601,7 +747,8 @@ func (p *ProFormaParser) createModification(modStr string, options map[string]in
 				}
 			}
 			return NewModification(modStr, nil, nil, nil, "ambiguous", false, 0, 0.0, false,
-				nil, false, false, false, &ambiguityGroup, false, inRange, rangeStart, rangeEnd, localizationScore, modValue)
+				nil, false, false, false, &ambiguityGroup, false, inRange, rangeStart, rangeEnd, localizationScore, modValue,
+				positionConstraint, limitPerPosition, colocalizeKnown, colocalizeUnknown, p.isIonTypeModification(modStr))
 		} else if matches := ambiguityRefPattern.FindStringSubmatch(modStr); matches != nil && !strings.HasPrefix(matches[1], "XL") {
 			ambiguityGroup := matches[1]
 			var localizationScore *float64
@@ -611,13 +758,15 @@ func (p *ProFormaParser) createModification(modStr string, options map[string]in
 				}
 			}
 			return NewModification("", nil, nil, nil, "ambiguous", false, 0, 0.0, false,
-				nil, false, false, false, &ambiguityGroup, true, inRange, rangeStart, rangeEnd, localizationScore, modValue)
+				nil, false, false, false, &ambiguityGroup, true, inRange, rangeStart, rangeEnd, localizationScore, modValue,
+				positionConstraint, limitPerPosition, colocalizeKnown, colocalizeUnknown, p.isIonTypeModification(modStr))
 		}
 	}
 
 	// Create the modification with appropriate attributes
 	return NewModification(modStr, nil, nil, nil, modType, isLabile, 0, 0.0, false,
-		crosslinkId, isCrosslinkRef, isBranchRef, isBranch, nil, false, inRange, rangeStart, rangeEnd, nil, modValue)
+		crosslinkId, isCrosslinkRef, isBranchRef, isBranch, nil, false, inRange, rangeStart, rangeEnd, nil, modValue,
+		positionConstraint, limitPerPosition, colocalizeKnown, colocalizeUnknown, p.isIonTypeModification(modStr))
 }
 
 // parseChargeInfo parses charge information from a ProForma string.
@@ -714,4 +863,36 @@ func (p *ProFormaParser) parseChargeInfo(proformaStr string) ([]interface{}, err
 	}
 
 	return []interface{}{resultStr, &chargeValue, ionicSpecies}, nil
+}
+
+// isIonTypeModification detects if a modification is an ion type (ProForma 2.1 Section 11.6)
+func (p *ProFormaParser) isIonTypeModification(modStr string) bool {
+	modStrLower := strings.ToLower(modStr)
+
+	// Check for -type-ion suffix
+	if strings.HasSuffix(modStrLower, "-type-ion") {
+		return true
+	}
+
+	// Check for known Unimod ion type IDs
+	ionTypeUnimodIDs := map[string]bool{
+		"140":  true, // a-type-ion
+		"2132": true, // b-type-ion
+		"4":    true, // c-type-ion
+		"24":   true, // x-type-ion
+		"2133": true, // y-type-ion
+		"23":   true, // z-type-ion
+	}
+
+	if strings.HasPrefix(modStr, "UNIMOD:") || strings.HasPrefix(modStr, "U:") {
+		parts := strings.Split(modStr, ":")
+		if len(parts) >= 2 {
+			unimodID := parts[1]
+			if ionTypeUnimodIDs[unimodID] {
+				return true
+			}
+		}
+	}
+
+	return false
 }

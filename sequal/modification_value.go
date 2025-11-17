@@ -362,6 +362,29 @@ func (mv *ModificationValue) processPrimaryValue(value string) {
 			valueStr := parts[1]
 			mv.primaryValue = valueStr
 
+			// ProForma 2.1: Extract charge notation for formulas
+			var chargeStr *string
+			var chargeValue *int
+			if strings.ToUpper(source) == "FORMULA" {
+				// Check for charge notation pattern :z+N or :z-N
+				re := regexp.MustCompile(`:z([+-]\d+)$`)
+				matches := re.FindStringSubmatch(valueStr)
+				if len(matches) > 1 {
+					// Extract the charge string (e.g., "z+2")
+					charge := "z" + matches[1]
+					chargeStr = &charge
+
+					// Extract the numeric charge value
+					if cVal, err := strconv.Atoi(matches[1]); err == nil {
+						chargeValue = &cVal
+					}
+
+					// Remove the charge notation from the value
+					valueStr = re.ReplaceAllString(valueStr, "")
+					mv.primaryValue = valueStr
+				}
+			}
+
 			// Handle special cases with # symbol
 			if strings.Contains(valueStr, "#") {
 				valueParts := strings.SplitN(valueStr, "#", 2)
@@ -408,6 +431,17 @@ func (mv *ModificationValue) processPrimaryValue(value string) {
 				// Simple value with source
 				pipeVal := NewPipeValue(valueStr, PipeValueTypeSynonym, valueStr)
 				pipeVal.source = &source
+				// ProForma 2.1: Set charge if present (for formulas)
+				if strings.ToUpper(source) == "FORMULA" {
+					pipeVal.SetType(PipeValueTypeFormula)
+					pipeVal.isValidFormula = validateFormula(valueStr)
+					pipeVal.charge = chargeStr
+					pipeVal.chargeValue = chargeValue
+				} else if strings.ToUpper(source) == "GLYCAN" {
+					// ProForma 2.1: Validate glycan (including custom monosaccharides)
+					pipeVal.SetType(PipeValueTypeGlycan)
+					pipeVal.isValidGlycan = validateGlycan(valueStr)
+				}
 				mv.pipeValues = append(mv.pipeValues, pipeVal)
 			}
 		} else if strings.ToUpper(parts[0]) == "MASS" {
@@ -570,6 +604,28 @@ func (mv *ModificationValue) _processPipeComponent(component string) {
 			source := parts[0]
 			value := parts[1]
 
+			// ProForma 2.1: Extract charge notation for formulas
+			var chargeStr *string
+			var chargeValue *int
+			if strings.ToUpper(source) == "FORMULA" {
+				// Check for charge notation pattern :z+N or :z-N
+				re := regexp.MustCompile(`:z([+-]\d+)$`)
+				matches := re.FindStringSubmatch(value)
+				if len(matches) > 1 {
+					// Extract the charge string (e.g., "z+2")
+					charge := "z" + matches[1]
+					chargeStr = &charge
+
+					// Extract the numeric charge value
+					if cVal, err := strconv.Atoi(matches[1]); err == nil {
+						chargeValue = &cVal
+					}
+
+					// Remove the charge notation from the value
+					value = re.ReplaceAllString(value, "")
+				}
+			}
+
 			if strings.Contains(value, "#") {
 				pvParts := strings.SplitN(value, "#", 2)
 				value = pvParts[0]
@@ -605,6 +661,9 @@ func (mv *ModificationValue) _processPipeComponent(component string) {
 					pipeVal = NewPipeValue(value, PipeValueTypeFormula, component)
 					pipeVal.source = &source
 					pipeVal.isValidFormula = isValidFormula
+					// ProForma 2.1: Set charge if present
+					pipeVal.charge = chargeStr
+					pipeVal.chargeValue = chargeValue
 				} else {
 					pipeVal = NewPipeValue(value, PipeValueTypeAmbiguity, component)
 					pipeVal.source = &source
@@ -661,6 +720,9 @@ func (mv *ModificationValue) _processPipeComponent(component string) {
 					isValidFormula := validateFormula(value)
 					pipeVal = NewPipeValue(value, PipeValueTypeFormula, component)
 					pipeVal.isValidFormula = isValidFormula
+					// ProForma 2.1: Set charge if present
+					pipeVal.charge = chargeStr
+					pipeVal.chargeValue = chargeValue
 				} else {
 					pipeVal = NewPipeValue(value, PipeValueTypeSynonym, component)
 				}
@@ -868,6 +930,7 @@ func validateGlycan(glycan string) bool {
 		return len(monos[i]) > len(monos[j])
 	})
 
+	// Build pattern for standard monosaccharides
 	monoPattern := "^("
 	for i, mono := range monos {
 		if i > 0 {
@@ -875,17 +938,38 @@ func validateGlycan(glycan string) bool {
 		}
 		monoPattern += regexp.QuoteMeta(mono)
 	}
-	monoPattern += `)(\\d+)?`
+	monoPattern += `)(\d+)?`
 
-	re := regexp.MustCompile(monoPattern)
+	// ProForma 2.1: Pattern for custom monosaccharides in curly braces
+	// Format: {Formula} or {Formula:z+N}
+	customMonoPattern := `^\{([A-Za-z0-9]+)(:z[+-]\d+)?\}(\d+)?`
+
+	standardRe := regexp.MustCompile(monoPattern)
+	customRe := regexp.MustCompile(customMonoPattern)
 
 	i := 0
 	for i < len(glycanClean) {
-		match := re.FindStringSubmatch(glycanClean[i:])
-		if match == nil {
+		// Try custom monosaccharide first
+		customMatch := customRe.FindStringSubmatch(glycanClean[i:])
+		if customMatch != nil {
+			// Validate the formula part
+			formula := customMatch[1]
+			if validateFormula(formula) {
+				i += len(customMatch[0])
+				continue
+			}
 			return false
 		}
-		i += len(match[0])
+
+		// Try standard monosaccharide
+		standardMatch := standardRe.FindStringSubmatch(glycanClean[i:])
+		if standardMatch != nil {
+			i += len(standardMatch[0])
+			continue
+		}
+
+		// No match found
+		return false
 	}
 
 	return i == len(glycanClean)

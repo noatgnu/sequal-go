@@ -6,38 +6,38 @@ import (
 
 func TestModificationCreation(t *testing.T) {
 	tests := []struct {
-		name         string
-		value        string
-		modType      string
-		expectedType string
+		name          string
+		value         string
+		modType       string
+		expectedType  string
 		expectedValue string
 	}{
 		{
-			name:         "Simple modification",
-			value:        "Phospho",
-			modType:      "static",
-			expectedType: "static",
+			name:          "Simple modification",
+			value:         "Phospho",
+			modType:       "static",
+			expectedType:  "static",
 			expectedValue: "Phospho",
 		},
 		{
-			name:         "Mass shift modification",
-			value:        "+79.966",
-			modType:      "static",
-			expectedType: "static",
+			name:          "Mass shift modification",
+			value:         "+79.966",
+			modType:       "static",
+			expectedType:  "static",
 			expectedValue: "+79.966",
 		},
 		{
-			name:         "Terminal modification",
-			value:        "Acetyl",
-			modType:      "terminal",
-			expectedType: "terminal",
+			name:          "Terminal modification",
+			value:         "Acetyl",
+			modType:       "terminal",
+			expectedType:  "terminal",
 			expectedValue: "Acetyl",
 		},
 		{
-			name:         "Labile modification",
-			value:        "Glycan:Hex(1)HexNAc(2)",
-			modType:      "labile",
-			expectedType: "labile",
+			name:          "Labile modification",
+			value:         "Glycan:Hex(1)HexNAc(2)",
+			modType:       "labile",
+			expectedType:  "labile",
 			expectedValue: "Hex(1)HexNAc(2)",
 		},
 	}
@@ -45,7 +45,8 @@ func TestModificationCreation(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			mod := NewModification(tt.value, nil, nil, nil, tt.modType, false, 0, 0.0, false,
-				nil, false, false, false, nil, false, false, nil, nil, nil, nil)
+				nil, false, false, false, nil, false, false, nil, nil, nil, nil,
+				nil, nil, false, false, false)
 
 			if mod.GetModType() != tt.expectedType {
 				t.Errorf("Expected mod type '%s', got '%s'", tt.expectedType, mod.GetModType())
@@ -61,7 +62,8 @@ func TestModificationCreation(t *testing.T) {
 func TestModificationWithMass(t *testing.T) {
 	mass := 79.966331
 	mod := NewModification("Phospho", nil, nil, nil, "static", false, 0, mass, false,
-		nil, false, false, false, nil, false, false, nil, nil, nil, nil)
+		nil, false, false, false, nil, false, false, nil, nil, nil, nil,
+		nil, nil, false, false, false)
 
 	retrievedMass := mod.GetMass()
 	if retrievedMass == nil {
@@ -74,7 +76,8 @@ func TestModificationWithMass(t *testing.T) {
 func TestModificationWithCrosslink(t *testing.T) {
 	crosslinkID := "XL1"
 	mod := NewModification("DSS", nil, nil, nil, "crosslink", false, 0, 138.068, false,
-		&crosslinkID, false, false, false, nil, false, false, nil, nil, nil, nil)
+		&crosslinkID, false, false, false, nil, false, false, nil, nil, nil, nil,
+		nil, nil, false, false, false)
 
 	if mod.GetModType() != "crosslink" {
 		t.Errorf("Expected mod type 'crosslink', got '%s'", mod.GetModType())
@@ -92,7 +95,8 @@ func TestModificationWithAmbiguity(t *testing.T) {
 	ambiguityGroup := "1"
 	localizationScore := 0.75
 	mod := NewModification("Phospho", nil, nil, nil, "ambiguous", false, 0, 0.0, false,
-		nil, false, false, false, &ambiguityGroup, false, false, nil, nil, &localizationScore, nil)
+		nil, false, false, false, &ambiguityGroup, false, false, nil, nil, &localizationScore, nil,
+		nil, nil, false, false, false)
 
 	if mod.GetModType() != "ambiguous" {
 		t.Errorf("Expected mod type 'ambiguous', got '%s'", mod.GetModType())
@@ -115,13 +119,15 @@ func TestModificationToProforma(t *testing.T) {
 		{
 			name: "Simple modification",
 			mod: NewModification("Phospho", nil, nil, nil, "static", false, 0, 0.0, false,
-				nil, false, false, false, nil, false, false, nil, nil, nil, nil),
+				nil, false, false, false, nil, false, false, nil, nil, nil, nil,
+				nil, nil, false, false, false),
 			expectedOutput: "Phospho",
 		},
 		{
 			name: "Mass shift modification",
 			mod: NewModification("+79.966", nil, nil, nil, "static", false, 0, 79.966, false,
-				nil, false, false, false, nil, false, false, nil, nil, nil, nil),
+				nil, false, false, false, nil, false, false, nil, nil, nil, nil,
+				nil, nil, false, false, false),
 			expectedOutput: "+79.966",
 		},
 	}
@@ -138,13 +144,16 @@ func TestModificationToProforma(t *testing.T) {
 
 func TestModificationEquality(t *testing.T) {
 	mod1 := NewModification("Phospho", IntPtr(5), nil, nil, "static", false, 0, 79.966, false,
-		nil, false, false, false, nil, false, false, nil, nil, nil, nil)
+		nil, false, false, false, nil, false, false, nil, nil, nil, nil,
+		nil, nil, false, false, false)
 
 	mod2 := NewModification("Phospho", IntPtr(5), nil, nil, "static", false, 0, 79.966, false,
-		nil, false, false, false, nil, false, false, nil, nil, nil, nil)
+		nil, false, false, false, nil, false, false, nil, nil, nil, nil,
+		nil, nil, false, false, false)
 
 	mod3 := NewModification("Acetyl", IntPtr(5), nil, nil, "static", false, 0, 42.011, false,
-		nil, false, false, false, nil, false, false, nil, nil, nil, nil)
+		nil, false, false, false, nil, false, false, nil, nil, nil, nil,
+		nil, nil, false, false, false)
 
 	if !mod1.Equal(*mod2) {
 		t.Errorf("Expected mod1 and mod2 to be equal")
@@ -157,7 +166,8 @@ func TestModificationEquality(t *testing.T) {
 
 func TestModificationToMap(t *testing.T) {
 	mod := NewModification("Phospho", IntPtr(5), nil, StringPtr("Phosphorylation"), "static", false, 0, 79.966, false,
-		nil, false, false, false, nil, false, false, nil, nil, nil, nil)
+		nil, false, false, false, nil, false, false, nil, nil, nil, nil,
+		nil, nil, false, false, false)
 
 	modMap := mod.ToMap()
 
@@ -185,19 +195,22 @@ func TestModificationString(t *testing.T) {
 		{
 			name: "Simple modification",
 			mod: NewModification("Phospho", nil, nil, nil, "static", false, 0, 0.0, false,
-				nil, false, false, false, nil, false, false, nil, nil, nil, nil),
+				nil, false, false, false, nil, false, false, nil, nil, nil, nil,
+				nil, nil, false, false, false),
 			expectedString: "Phospho",
 		},
 		{
 			name: "Crosslink reference",
 			mod: NewModification("", nil, nil, nil, "crosslink", false, 0, 0.0, false,
-				StringPtr("XL1"), true, false, false, nil, false, false, nil, nil, nil, nil),
+				StringPtr("XL1"), true, false, false, nil, false, false, nil, nil, nil, nil,
+				nil, nil, false, false, false),
 			expectedString: "#XL1",
 		},
 		{
 			name: "Branch reference",
 			mod: NewModification("", nil, nil, nil, "branch", false, 0, 0.0, false,
-				nil, false, true, false, nil, false, false, nil, nil, nil, nil),
+				nil, false, true, false, nil, false, false, nil, nil, nil, nil,
+				nil, nil, false, false, false),
 			expectedString: "#BRANCH",
 		},
 	}
@@ -214,7 +227,8 @@ func TestModificationString(t *testing.T) {
 
 func TestLabileModification(t *testing.T) {
 	mod := NewModification("Glycan:Hex(1)HexNAc(2)", nil, nil, nil, "labile", true, 1, 0.0, false,
-		nil, false, false, false, nil, false, false, nil, nil, nil, nil)
+		nil, false, false, false, nil, false, false, nil, nil, nil, nil,
+		nil, nil, false, false, false)
 
 	if !mod.IsLabile() {
 		t.Errorf("Expected modification to be labile")
@@ -231,7 +245,8 @@ func TestLabileModification(t *testing.T) {
 
 func TestAllFilledModification(t *testing.T) {
 	mod := NewModification("Carbamidomethyl", nil, nil, nil, "static", false, 0, 57.021, true,
-		nil, false, false, false, nil, false, false, nil, nil, nil, nil)
+		nil, false, false, false, nil, false, false, nil, nil, nil, nil,
+		nil, nil, false, false, false)
 
 	if !mod.IsAllFilled() {
 		t.Errorf("Expected modification to be all-filled")
@@ -241,7 +256,8 @@ func TestAllFilledModification(t *testing.T) {
 func TestModificationWithRegex(t *testing.T) {
 	regexPattern := "[ST]"
 	mod := NewModification("Phospho", nil, &regexPattern, nil, "variable", false, 0, 79.966, false,
-		nil, false, false, false, nil, false, false, nil, nil, nil, nil)
+		nil, false, false, false, nil, false, false, nil, nil, nil, nil,
+		nil, nil, false, false, false)
 
 	regex := mod.GetRegex()
 	if regex == nil {
@@ -262,7 +278,7 @@ func TestModificationWithRegex(t *testing.T) {
 				if pos[0] == 7 { // S position
 					foundS = true
 				}
-				if pos[0] == 3 { // T position  
+				if pos[0] == 3 { // T position
 					foundT = true
 				}
 			}
@@ -279,10 +295,12 @@ func TestModificationWithRegex(t *testing.T) {
 
 func TestModificationHash(t *testing.T) {
 	mod1 := NewModification("Phospho", IntPtr(5), nil, nil, "static", false, 0, 79.966, false,
-		nil, false, false, false, nil, false, false, nil, nil, nil, nil)
+		nil, false, false, false, nil, false, false, nil, nil, nil, nil,
+		nil, nil, false, false, false)
 
 	mod2 := NewModification("Phospho", IntPtr(5), nil, nil, "static", false, 0, 79.966, false,
-		nil, false, false, false, nil, false, false, nil, nil, nil, nil)
+		nil, false, false, false, nil, false, false, nil, nil, nil, nil,
+		nil, nil, false, false, false)
 
 	hash1, err1 := mod1.Hash()
 	hash2, err2 := mod2.Hash()
@@ -300,7 +318,8 @@ func TestModificationHash(t *testing.T) {
 
 	// Different modification should have different hash
 	mod3 := NewModification("Acetyl", IntPtr(5), nil, nil, "static", false, 0, 42.011, false,
-		nil, false, false, false, nil, false, false, nil, nil, nil, nil)
+		nil, false, false, false, nil, false, false, nil, nil, nil, nil,
+		nil, nil, false, false, false)
 
 	hash3, err3 := mod3.Hash()
 	if err3 != nil {

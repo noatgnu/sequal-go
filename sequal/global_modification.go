@@ -13,7 +13,7 @@ type GlobalModification struct {
 }
 
 // NewGlobalModification creates a new GlobalModification instance
-func NewGlobalModification(value string, targetResidues []string, modType string) *GlobalModification {
+func NewGlobalModification(value string, targetResidues []string, modType string, positionConstraint []string, limitPerPosition *int, colocalizeKnown bool, colocalizeUnknown bool) *GlobalModification {
 	if modType != "isotope" && modType != "fixed" {
 		panic("Global modification type must be 'isotope' or 'fixed'")
 	}
@@ -24,21 +24,26 @@ func NewGlobalModification(value string, targetResidues []string, modType string
 		nil, // regexPattern
 		nil, // fullName
 		"global",
-		false, // labile
-		0,     // labilNumber
-		0,     // mass
-		false, // allFilled
-		nil,   // crosslinkID
-		false, // isCrosslinkRef
-		false, // isBranchRef
-		false, // isBranch
-		nil,   // ambiguityGroup
-		false, // isAmbiguityRef
-		false, // inRange
-		nil,   // rangeStart
-		nil,   // rangeEnd
-		nil,   // localizationScore
-		nil,   // modValue
+		false,              // labile
+		0,                  // labilNumber
+		0,                  // mass
+		false,              // allFilled
+		nil,                // crosslinkID
+		false,              // isCrosslinkRef
+		false,              // isBranchRef
+		false,              // isBranch
+		nil,                // ambiguityGroup
+		false,              // isAmbiguityRef
+		false,              // inRange
+		nil,                // rangeStart
+		nil,                // rangeEnd
+		nil,                // localizationScore
+		nil,                // modValue
+		positionConstraint, // positionConstraint (ProForma 2.1)
+		limitPerPosition,   // limitPerPosition (ProForma 2.1)
+		colocalizeKnown,    // colocalizeKnown (ProForma 2.1)
+		colocalizeUnknown,  // colocalizeUnknown (ProForma 2.1)
+		false,              // isIonType (ProForma 2.1)
 	)
 
 	return &GlobalModification{
@@ -65,12 +70,13 @@ func (gm *GlobalModification) ToProforma() string {
 	} else {
 		modValue := gm.Modification.ToProforma()
 		var modStr string
-		if !strings.HasPrefix(modValue, "[") {
-			// Non-bracketed value handling
+		// Check if the modification is a mass (starts with + or -)
+		// If not, it's a named modification and needs brackets
+		if strings.HasPrefix(modValue, "+") || strings.HasPrefix(modValue, "-") {
 			modStr = modValue
 		} else {
-			// Bracketed value handling
-			modStr = modValue
+			// Named modification - wrap in brackets
+			modStr = fmt.Sprintf("[%s]", modValue)
 		}
 		targets := strings.Join(gm.targetResidues, ",")
 		return fmt.Sprintf("<%s@%s>", modStr, targets)

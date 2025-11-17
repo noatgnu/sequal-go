@@ -21,15 +21,19 @@ type Sequence struct {
 	ionicSpecies        *string
 	isChimeric          bool
 	peptidoforms        []*Sequence
+	peptidoformName     *string
+	peptidoformIonName  *string
+	compoundIonName     *string
 }
 
 // NewSequence creates a new Sequence instance with the specified parameters.
 // The seq parameter can be a string or other sequence representation.
 // If parse is true, the sequence will be parsed according to modPosition ("left" or "right").
-func NewSequence(seq interface{}, mods map[int][]*Modification, parse bool, 
-	modPosition string, chains []*Sequence, globalMods []*GlobalModification, 
-	sequenceAmbiguities []*SequenceAmbiguity, charge *int, ionicSpecies *string) *Sequence {
-	
+func NewSequence(seq interface{}, mods map[int][]*Modification, parse bool,
+	modPosition string, chains []*Sequence, globalMods []*GlobalModification,
+	sequenceAmbiguities []*SequenceAmbiguity, charge *int, ionicSpecies *string,
+	peptidoformName *string, peptidoformIonName *string, compoundIonName *string) *Sequence {
+
 	s := &Sequence{
 		seq:                 make([]*AminoAcid, 0),
 		chains:              chains,
@@ -41,6 +45,9 @@ func NewSequence(seq interface{}, mods map[int][]*Modification, parse bool,
 		ionicSpecies:        ionicSpecies,
 		isChimeric:          false,
 		peptidoforms:        make([]*Sequence, 0),
+		peptidoformName:     peptidoformName,
+		peptidoformIonName:  peptidoformIonName,
+		compoundIonName:     compoundIonName,
 	}
 
 	if mods != nil {
@@ -58,7 +65,7 @@ func NewSequence(seq interface{}, mods map[int][]*Modification, parse bool,
 }
 
 // FromProforma creates a Sequence object from a ProForma notation string.
-// Supports all ProForma 2.0 features including multi-chain sequences (//), 
+// Supports all ProForma 2.0 features including multi-chain sequences (//),
 // chimeric sequences (+), and all modification types.
 func FromProforma(proformaStr string) (*Sequence, error) {
 	if strings.Contains(proformaStr, "//") {
@@ -112,6 +119,9 @@ func FromProforma(proformaStr string) (*Sequence, error) {
 	sequenceAmbiguities := result.SequenceAmbiguities
 	charge := result.Charge
 	species := result.IonicSpecies
+	peptidoformName := result.PeptidoformName
+	peptidoformIonName := result.PeptidoformIonName
+	compoundIonName := result.CompoundIonName
 
 	seq := NewSequence(
 		baseSequence,
@@ -123,6 +133,9 @@ func FromProforma(proformaStr string) (*Sequence, error) {
 		sequenceAmbiguities,
 		charge,
 		species,
+		peptidoformName,
+		peptidoformIonName,
+		compoundIonName,
 	)
 
 	if charge != nil {
@@ -182,7 +195,7 @@ func (s *Sequence) parseSequence(seq interface{}, modPosition string) error {
 				if err != nil {
 					return err
 				}
-				
+
 				for _, mod := range currentMod {
 					aa.AddModification(mod)
 				}
@@ -215,7 +228,8 @@ func (s *Sequence) parseSequence(seq interface{}, modPosition string) error {
 			if len(s.mods) == 0 {
 				modValue := s.extractModValue(block.Value)
 				mod := NewModification(modValue, nil, nil, nil, "static", false, 0, 0.0, false,
-					nil, false, false, false, nil, false, false, nil, nil, nil, nil)
+					nil, false, false, false, nil, false, false, nil, nil, nil, nil,
+					nil, nil, false, false, false)
 
 				if modPosition == "right" && currentPosition > 0 {
 					s.seq[currentPosition-1].AddModification(mod)
@@ -297,6 +311,17 @@ func (s *Sequence) ToProforma() string {
 // chainToProforma converts a chain to ProForma format
 func (s *Sequence) chainToProforma(chain *Sequence) string {
 	result := ""
+
+	// Add named entities (ProForma 2.1 Section 8.2)
+	if chain.compoundIonName != nil {
+		result += fmt.Sprintf("(>>>%s)", *chain.compoundIonName)
+	}
+	if chain.peptidoformIonName != nil {
+		result += fmt.Sprintf("(>>%s)", *chain.peptidoformIonName)
+	}
+	if chain.peptidoformName != nil {
+		result += fmt.Sprintf("(>%s)", *chain.peptidoformName)
+	}
 
 	// Add global modifications
 	for _, mod := range s.globalMods {
@@ -418,7 +443,7 @@ func (s *Sequence) GetItem(key interface{}) interface{} {
 		if len(k) == 2 {
 			start, end := k[0], k[1]
 			if start >= 0 && end <= len(s.seq) && start <= end {
-				newSeq := NewSequence("", nil, false, "right", nil, nil, nil, nil, nil)
+				newSeq := NewSequence("", nil, false, "right", nil, nil, nil, nil, nil, nil, nil, nil)
 				newSeq.seq = s.seq[start:end]
 				newSeq.seqLength = len(newSeq.seq)
 				return newSeq
@@ -604,4 +629,19 @@ func (s *Sequence) IsMultiChain() bool {
 // GetChains returns the chains for multi-chain sequences
 func (s *Sequence) GetChains() []*Sequence {
 	return s.chains
+}
+
+// GetPeptidoformName returns the peptidoform name (ProForma 2.1)
+func (s *Sequence) GetPeptidoformName() *string {
+	return s.peptidoformName
+}
+
+// GetPeptidoformIonName returns the peptidoform ion name (ProForma 2.1)
+func (s *Sequence) GetPeptidoformIonName() *string {
+	return s.peptidoformIonName
+}
+
+// GetCompoundIonName returns the compound ion name for chimeric spectra (ProForma 2.1)
+func (s *Sequence) GetCompoundIonName() *string {
+	return s.compoundIonName
 }

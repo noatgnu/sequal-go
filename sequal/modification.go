@@ -32,6 +32,15 @@ type Modification struct {
 	labilNumber int
 	fullName    *string
 	allFilled   bool
+
+	// ProForma 2.1: Placement controls (Section 11.2)
+	positionConstraint []string // Position:M,C
+	limitPerPosition   *int     // Limit:2
+	colocalizeKnown    bool     // CoMKP
+	colocalizeUnknown  bool     // CoMUP
+
+	// ProForma 2.1: Ion notation (Section 11.6)
+	isIonType bool // Indicates if this is an ion type modification (a-type-ion, b-type-ion, etc.)
 }
 
 // KnownSources is a set of recognized modification source databases
@@ -53,7 +62,9 @@ func NewModification(value string, position *int, regexPattern *string, fullName
 	modType string, labile bool, labilNumber int, mass float64, allFilled bool,
 	crosslinkID *string, isCrosslinkRef bool, isBranchRef bool, isBranch bool,
 	ambiguityGroup *string, isAmbiguityRef bool, inRange bool,
-	rangeStart, rangeEnd *int, localizationScore *float64, modValue *ModificationValue) *Modification {
+	rangeStart, rangeEnd *int, localizationScore *float64, modValue *ModificationValue,
+	positionConstraint []string, limitPerPosition *int, colocalizeKnown bool, colocalizeUnknown bool,
+	isIonType bool) *Modification {
 
 	var source *string
 	originalValue := value
@@ -105,26 +116,31 @@ func NewModification(value string, position *int, regexPattern *string, fullName
 	}
 
 	mod := &Modification{
-		BaseBlock:         baseBlock,
-		source:            source,
-		originalValue:     originalValue,
-		crosslinkID:       crosslinkID,
-		isCrosslinkRef:    isCrosslinkRef,
-		isBranchRef:       isBranchRef,
-		isBranch:          isBranch,
-		isAmbiguityRef:    isAmbiguityRef,
-		ambiguityGroup:    ambiguityGroup,
-		inRange:           inRange,
-		rangeStart:        rangeStart,
-		rangeEnd:          rangeEnd,
-		localizationScore: localizationScore,
-		modValue:          modValue,
-		regex:             re,
-		modType:           modType,
-		labile:            labile,
-		labilNumber:       labilNumber,
-		fullName:          fullName,
-		allFilled:         allFilled,
+		BaseBlock:          baseBlock,
+		source:             source,
+		originalValue:      originalValue,
+		crosslinkID:        crosslinkID,
+		isCrosslinkRef:     isCrosslinkRef,
+		isBranchRef:        isBranchRef,
+		isBranch:           isBranch,
+		isAmbiguityRef:     isAmbiguityRef,
+		ambiguityGroup:     ambiguityGroup,
+		inRange:            inRange,
+		rangeStart:         rangeStart,
+		rangeEnd:           rangeEnd,
+		localizationScore:  localizationScore,
+		modValue:           modValue,
+		regex:              re,
+		modType:            modType,
+		labile:             labile,
+		labilNumber:        labilNumber,
+		fullName:           fullName,
+		allFilled:          allFilled,
+		positionConstraint: positionConstraint,
+		limitPerPosition:   limitPerPosition,
+		colocalizeKnown:    colocalizeKnown,
+		colocalizeUnknown:  colocalizeUnknown,
+		isIonType:          isIonType,
 	}
 
 	if modType == "labile" {
@@ -254,6 +270,31 @@ func (m *Modification) GetFullName() *string {
 // IsAllFilled returns true if the modification occurs at all expected sites.
 func (m *Modification) IsAllFilled() bool {
 	return m.allFilled
+}
+
+// GetPositionConstraint returns the position constraint (ProForma 2.1)
+func (m *Modification) GetPositionConstraint() []string {
+	return m.positionConstraint
+}
+
+// GetLimitPerPosition returns the limit per position (ProForma 2.1)
+func (m *Modification) GetLimitPerPosition() *int {
+	return m.limitPerPosition
+}
+
+// GetColocalizeKnown returns whether to colocalize with known positions (ProForma 2.1)
+func (m *Modification) GetColocalizeKnown() bool {
+	return m.colocalizeKnown
+}
+
+// GetColocalizeUnknown returns whether to colocalize with unknown positions (ProForma 2.1)
+func (m *Modification) GetColocalizeUnknown() bool {
+	return m.colocalizeUnknown
+}
+
+// IsIonType returns whether this is an ion type modification (ProForma 2.1 Section 11.6)
+func (m *Modification) IsIonType() bool {
+	return m.isIonType
 }
 
 // FindPositions finds positions of the modification in the given sequence
@@ -446,11 +487,30 @@ func (m *Modification) ToProforma() string {
 				modPart += "#" + *pv.GetAmbiguityGroup() + scoreStr
 			}
 
+			// ProForma 2.1: Add charge notation if present
+			if pv.GetCharge() != nil {
+				modPart += ":" + *pv.GetCharge()
+			}
+
 			if _, exists := seen[modPart]; exists || modPart == "" {
 				continue
 			}
 			parts = append(parts, modPart)
 			seen[modPart] = true
+		}
+
+		// ProForma 2.1: Add placement control tags (Section 11.2)
+		if m.positionConstraint != nil && len(m.positionConstraint) > 0 {
+			parts = append(parts, "Position:"+strings.Join(m.positionConstraint, ","))
+		}
+		if m.limitPerPosition != nil {
+			parts = append(parts, fmt.Sprintf("Limit:%d", *m.limitPerPosition))
+		}
+		if m.colocalizeKnown {
+			parts = append(parts, "CoMKP")
+		}
+		if m.colocalizeUnknown {
+			parts = append(parts, "CoMUP")
 		}
 
 		return strings.Join(parts, "|")
