@@ -29,6 +29,21 @@ type Sequence struct {
 // NewSequence creates a new Sequence instance with the specified parameters.
 // The seq parameter can be a string or other sequence representation.
 // If parse is true, the sequence will be parsed according to modPosition ("left" or "right").
+//
+// Examples:
+//
+//	// Create a new sequence from a string
+//	seq := sequal.NewSequence("PEPTIDE", nil, true, "right", nil, nil, nil, nil, nil, nil, nil, nil)
+//	fmt.Println(seq.ToStrippedString()) // "PEPTIDE"
+//
+//	// Create a new sequence with modifications
+//	mods := map[int][]*sequal.Modification{
+//		2: {sequal.NewModification("Phospho", nil, nil, nil, "static", false, 0, 79.966331, false,
+//			nil, false, false, false, nil, false, false, nil, nil, nil, nil,
+//			nil, nil, false, false, false)},
+//	}
+//	seq = sequal.NewSequence("PEPTIDE", mods, true, "right", nil, nil, nil, nil, nil, nil, nil, nil)
+//	fmt.Println(seq.ToProforma()) // "PEP[Phospho]TIDE"
 func NewSequence(seq interface{}, mods map[int][]*Modification, parse bool,
 	modPosition string, chains []*Sequence, globalMods []*GlobalModification,
 	sequenceAmbiguities []*SequenceAmbiguity, charge *int, ionicSpecies *string,
@@ -68,16 +83,29 @@ func NewSequence(seq interface{}, mods map[int][]*Modification, parse bool,
 // Supports all ProForma 2.0 features including multi-chain sequences (//),
 // chimeric sequences (+), and all modification types.
 //
-// Example:
+// Examples:
 //
-//	proformaStr := "PEPT[Phospho]IDE"
-//	seq, err := sequal.FromProforma(proformaStr)
-//	if err != nil {
-//		fmt.Println("Error:", err)
-//	}
-//
+//	// Simple peptide
+//	seq, _ := sequal.FromProforma("PEPTIDE")
 //	fmt.Println(seq.ToStrippedString()) // "PEPTIDE"
-//	fmt.Println(seq.ToProforma())      // "PEPT[Phospho]IDE"
+//
+//	// Peptide with a modification
+//	seq, _ = sequal.FromProforma("PEPT[Phospho]IDE")
+//	fmt.Println(seq.ToProforma()) // "PEPT[Phospho]IDE"
+//
+//	// Peptide with a terminal modification
+//	seq, _ = sequal.FromProforma("[Acetyl]-PEPTIDE")
+//	fmt.Println(seq.ToProforma()) // "[Acetyl]-PEPTIDE"
+//
+//	// Multi-chain sequence
+//	seq, _ = sequal.FromProforma("PEPTIDE//SEQUEN[Phospho]CE")
+//	fmt.Println(seq.IsMultiChain()) // true
+//	fmt.Println(len(seq.GetChains())) // 2
+//
+//	// Chimeric sequence
+//	seq, _ = sequal.FromProforma("PEPTIDE+ANOTHER")
+//	fmt.Println(seq.IsChimeric()) // true
+//	fmt.Println(len(seq.GetPeptidoforms())) // 2
 func FromProforma(proformaStr string) (*Sequence, error) {
 	if strings.Contains(proformaStr, "//") {
 		chains := strings.Split(proformaStr, "//")
@@ -431,7 +459,12 @@ func (s *Sequence) chainToProforma(chain *Sequence) string {
 	return result
 }
 
-// ToStrippedString returns the sequence as a string without any modification annotations
+// ToStrippedString returns the sequence as a string without any modification annotations.
+//
+// Example:
+//
+//	seq, _ := sequal.FromProforma("PEPT[Phospho]IDE")
+//	fmt.Println(seq.ToStrippedString()) // "PEPTIDE"
 func (s *Sequence) ToStrippedString() string {
 	result := ""
 	for _, aa := range s.seq {

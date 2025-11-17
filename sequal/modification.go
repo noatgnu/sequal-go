@@ -59,14 +59,25 @@ var KnownSources = map[string]bool{
 // valid modification types (static, variable, terminal, ambiguous, crosslink, branch,
 // gap, labile, unknown_position, global).
 //
-// Example:
+// Examples:
 //
-//	// Create a new 'Phospho' modification
+//	// Simple modification
 //	mod := sequal.NewModification("Phospho", nil, nil, nil, "static", false, 0, 79.966331, false,
 //		nil, false, false, false, nil, false, false, nil, nil, nil, nil,
 //		nil, nil, false, false, false)
-//
 //	fmt.Println(mod.GetValue()) // "Phospho"
+//
+//	// Modification with a mass shift
+//	mod = sequal.NewModification("+21.98", nil, nil, nil, "static", false, 0, 21.98, false,
+//		nil, false, false, false, nil, false, false, nil, nil, nil, nil,
+//		nil, nil, false, false, false)
+//	fmt.Println(*mod.GetMass()) // 21.98
+//
+//	// Terminal modification
+//	mod = sequal.NewModification("Acetyl", nil, nil, nil, "terminal", false, 0, 42.011, false,
+//		nil, false, false, false, nil, false, false, nil, nil, nil, nil,
+//		nil, nil, false, false, false)
+//	fmt.Println(mod.GetModType()) // "terminal"
 func NewModification(value string, position *int, regexPattern *string, fullName *string,
 	modType string, labile bool, labilNumber int, mass float64, allFilled bool,
 	crosslinkID *string, isCrosslinkRef bool, isBranchRef bool, isBranch bool,
@@ -445,7 +456,15 @@ func (m *Modification) HasBranch() bool {
 	return false
 }
 
-// ToProforma converts the modification to ProForma notation string
+// ToProforma converts the modification to ProForma notation string.
+//
+// Example:
+//
+//	// Create a new 'Phospho' modification
+//	mod := sequal.NewModification("Phospho", nil, nil, nil, "static", false, 0, 79.966331, false,
+//		nil, false, false, false, nil, false, false, nil, nil, nil, nil,
+//		nil, nil, false, false, false)
+//	fmt.Println(mod.ToProforma()) // "Phospho"
 func (m *Modification) ToProforma() string {
 	if m.modValue != nil {
 		seen := map[string]bool{}

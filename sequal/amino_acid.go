@@ -19,16 +19,17 @@ type AminoAcid struct {
 // If the amino acid is not recognized and no mass is provided, it returns an error.
 // The mass parameter overrides the default mass for known amino acids.
 //
-// Example:
+// Examples:
 //
-//	// Create a new amino acid 'P' at position 0
+//	// Create a new amino acid 'A' (Alanine) at position 0
 //	pos := 0
-//	aa, err := sequal.NewAminoAcid("P", &pos, nil)
-//	if err != nil {
-//		fmt.Println("Error:", err)
-//	}
+//	aa, _ := sequal.NewAminoAcid("A", &pos, nil)
+//	fmt.Println(aa.GetValue()) // "A"
 //
-//	fmt.Println(aa.GetValue()) // "P"
+//	// Create a new amino acid with a custom mass
+//	mass := 123.456
+//	aa, _ = sequal.NewAminoAcid("X", &pos, &mass)
+//	fmt.Println(*aa.GetMass()) // 123.456
 func NewAminoAcid(value string, position *int, mass *float64) (*AminoAcid, error) {
 	if _, exists := AAMass[value]; !exists && mass == nil {
 		return nil, fmt.Errorf("unknown amino acid '%s' and no mass provided", value)
@@ -57,6 +58,16 @@ func (aa *AminoAcid) GetMods() []*Modification {
 }
 
 // AddModification appends a modification to this amino acid's modification list.
+//
+// Example:
+//
+//	pos := 0
+//	aa, _ := sequal.NewAminoAcid("S", &pos, nil)
+//	mod := sequal.NewModification("Phospho", nil, nil, nil, "static", false, 0, 79.966, false,
+//		nil, false, false, false, nil, false, false, nil, nil, nil, nil,
+//		nil, nil, false, false, false)
+//	aa.AddModification(mod)
+//	fmt.Println(aa.String()) // "S[Phospho]"
 func (aa *AminoAcid) AddModification(mod *Modification) {
 	aa.mods = append(aa.mods, mod)
 }
@@ -112,6 +123,16 @@ func (aa *AminoAcid) HasModification(mod interface{}) bool {
 
 // GetTotalMass calculates the total mass of the amino acid including all modifications.
 // Returns 0 if the base mass is not set.
+//
+// Example:
+//
+//	pos := 0
+//	aa, _ := sequal.NewAminoAcid("S", &pos, nil)
+//	mod := sequal.NewModification("Phospho", nil, nil, nil, "static", false, 0, 79.966, false,
+//		nil, false, false, false, nil, false, false, nil, nil, nil, nil,
+//		nil, nil, false, false, false)
+//	aa.AddModification(mod)
+//	fmt.Println(aa.GetTotalMass()) // 167.000358
 func (aa *AminoAcid) GetTotalMass() float64 {
 	mass := aa.GetMass()
 	if mass == nil {

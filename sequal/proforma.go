@@ -47,13 +47,36 @@ type ParseProFormaResult struct {
 // ParseProForma parses a ProForma string and returns its basic components.
 // This is a convenience function that creates a parser and calls Parse.
 //
-// Example:
+// Examples:
 //
+//	// Simple peptide
 //	proformaStr := "PEPTIDE"
-//	baseSeq, mods, globalMods, seqAmbig, chargeInfo, err := sequal.ParseProForma(proformaStr)
-//	if err != nil {
-//		fmt.Println("Error:", err)
-//	}
+//	baseSeq, _, _, _, _, _ := sequal.ParseProForma(proformaStr)
+//	fmt.Println(baseSeq) // "PEPTIDE"
+//
+//	// N-terminal modification
+//	proformaStr = "[Acetyl]-PEPTIDE"
+//	baseSeq, mods, _, _, _, _ := sequal.ParseProForma(proformaStr)
+//	fmt.Println(baseSeq) // "PEPTIDE"
+//	fmt.Println(mods["-1"][0].GetValue()) // "Acetyl"
+//
+//	// C-terminal modification
+//	proformaStr = "PEPTIDE-[Amidated]"
+//	baseSeq, mods, _, _, _, _ = sequal.ParseProForma(proformaStr)
+//	fmt.Println(baseSeq) // "PEPTIDE"
+//	fmt.Println(mods["-2"][0].GetValue()) // "Amidated"
+//
+//	// Global modification
+//	proformaStr = "<[Carbamidomethyl]@C>PEPTCDE"
+//	baseSeq, _, globalMods, _, _, _ := sequal.ParseProForma(proformaStr)
+//	fmt.Println(baseSeq) // "PEPTCDE"
+//	fmt.Println(globalMods[0].GetValue()) // "Carbamidomethyl"
+//
+//	// Charge state
+//	proformaStr = "PEPTIDE/2"
+//	baseSeq, _, _, _, chargeInfo, _ := sequal.ParseProForma(proformaStr)
+//	fmt.Println(baseSeq) // "PEPTIDE"
+//	fmt.Println(*chargeInfo[0]) // 2
 func ParseProForma(proformaStr string) (string, map[string][]*Modification, []*GlobalModification, []*SequenceAmbiguity, []*int, error) {
 	parser := NewProFormaParser()
 	return parser.Parse(proformaStr)
@@ -62,16 +85,25 @@ func ParseProForma(proformaStr string) (string, map[string][]*Modification, []*G
 // ParseProFormaDetailed parses a ProForma string and returns a structured result
 // containing all parsed components including charge, ionic species, and named entities (ProForma 2.1).
 //
-// Example:
+// Examples:
 //
-//	proformaStr := "[Acetyl]-PEPTIDE/2"
-//	result, err := sequal.ParseProFormaDetailed(proformaStr)
-//	if err != nil {
-//		fmt.Println("Error:", err)
-//	}
+//	// Simple peptide with charge
+//	proformaStr := "PEPTIDE/2"
+//	result, _ := sequal.ParseProFormaDetailed(proformaStr)
+//	fmt.Println(result.BaseSequence) // "PEPTIDE"
+//	fmt.Println(*result.Charge)     // 2
 //
-//	fmt.Println("Base Sequence:", result.BaseSequence)
-//	fmt.Println("Charge:", *result.Charge)
+//	// Peptide with modification and charge
+//	proformaStr = "[Acetyl]-PEPTIDE/2"
+//	result, _ = sequal.ParseProFormaDetailed(proformaStr)
+//	fmt.Println(result.BaseSequence) // "PEPTIDE"
+//	fmt.Println(*result.Charge)     // 2
+//	fmt.Println(result.Modifications["-1"][0].GetValue()) // "Acetyl"
+//
+//	// Named peptidoform
+//	proformaStr = "(>Tryptic peptide)SEQUEN[Phospho]CE"
+//	result, _ = sequal.ParseProFormaDetailed(proformaStr)
+//	fmt.Println(*result.PeptidoformName) // "Tryptic peptide"
 func ParseProFormaDetailed(proformaStr string) (*ParseProFormaResult, error) {
 	parser := NewProFormaParser()
 
