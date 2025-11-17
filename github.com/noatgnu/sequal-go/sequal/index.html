@@ -339,6 +339,13 @@ In Go, we represent sets as maps with bool values
     <pre class="chroma"><span class="kd">func</span> <span class="nf">ParseProForma</span><span class="p">(</span><span class="nx">proformaStr</span> <a href="https://pkg.go.dev/builtin#string"><span class="kt">string</span></a><span class="p">)</span> <span class="p">(</span><a href="https://pkg.go.dev/builtin#string"><span class="kt">string</span></a><span class="p">,</span> <span class="kd">map</span><span class="p">[</span><a href="https://pkg.go.dev/builtin#string"><span class="kt">string</span></a><span class="p">][]</span><span class="o">*</span><a href="#Modification"><span class="nx">Modification</span></a><span class="p">,</span> <span class="p">[]</span><span class="o">*</span><a href="#GlobalModification"><span class="nx">GlobalModification</span></a><span class="p">,</span> <span class="p">[]</span><span class="o">*</span><a href="#SequenceAmbiguity"><span class="nx">SequenceAmbiguity</span></a><span class="p">,</span> <span class="p">[]</span><span class="o">*</span><a href="https://pkg.go.dev/builtin#int"><span class="kt">int</span></a><span class="p">,</span> <a href="https://pkg.go.dev/builtin#error"><span class="kt">error</span></a><span class="p">)</span></pre>
     <p>ParseProForma parses a ProForma string and returns its basic components.
 This is a convenience function that creates a parser and calls Parse.
+<p>Example:
+<pre>proformaStr := &quot;PEPTIDE&quot;
+baseSeq, mods, globalMods, seqAmbig, chargeInfo, err := sequal.ParseProForma(proformaStr)
+if err != nil {
+	fmt.Println(&quot;Error:&quot;, err)
+}
+</pre>
 <h3 id="SplitChimericProforma">func SplitChimericProforma</h3>
     <pre class="chroma"><span class="kd">func</span> <span class="nf">SplitChimericProforma</span><span class="p">(</span><span class="nx">proformaStr</span> <a href="https://pkg.go.dev/builtin#string"><span class="kt">string</span></a><span class="p">)</span> <span class="p">[]</span><a href="https://pkg.go.dev/builtin#string"><span class="kt">string</span></a></pre>
     <p>SplitChimericProforma splits a chimeric ProForma string into individual peptidoforms
@@ -365,6 +372,16 @@ that can be applied to the residue.
   <p>NewAminoAcid creates a new AminoAcid instance with the specified value, position, and optional mass.
 If the amino acid is not recognized and no mass is provided, it returns an error.
 The mass parameter overrides the default mass for known amino acids.
+<p>Example:
+<pre>// Create a new amino acid &apos;P&apos; at position 0
+pos := 0
+aa, err := sequal.NewAminoAcid(&quot;P&quot;, &amp;pos, nil)
+if err != nil {
+	fmt.Println(&quot;Error:&quot;, err)
+}
+
+fmt.Println(aa.GetValue()) // &quot;P&quot;
+</pre>
 <h4 id="AminoAcid.AddModification">func (*AminoAcid) AddModification</h4>
   <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">aa</span> <span class="o">*</span><a href="#AminoAcid"><span class="nx">AminoAcid</span></a><span class="p">)</span> <span class="nf">AddModification</span><span class="p">(</span><span class="nx">mod</span> <span class="o">*</span><a href="#Modification"><span class="nx">Modification</span></a><span class="p">)</span></pre>
   <p>AddModification appends a modification to this amino acid&apos;s modification list.
@@ -476,7 +493,13 @@ This is the base interface for components like amino acids, modifications, etc.
     <p>GlobalModification represents a global modification that applies to specified residues
 <h4 id="NewGlobalModification">func NewGlobalModification</h4>
   <pre class="chroma"><span class="kd">func</span> <span class="nf">NewGlobalModification</span><span class="p">(</span><span class="nx">value</span> <a href="https://pkg.go.dev/builtin#string"><span class="kt">string</span></a><span class="p">,</span> <span class="nx">targetResidues</span> <span class="p">[]</span><a href="https://pkg.go.dev/builtin#string"><span class="kt">string</span></a><span class="p">,</span> <span class="nx">modType</span> <a href="https://pkg.go.dev/builtin#string"><span class="kt">string</span></a><span class="p">,</span> <span class="nx">positionConstraint</span> <span class="p">[]</span><a href="https://pkg.go.dev/builtin#string"><span class="kt">string</span></a><span class="p">,</span> <span class="nx">limitPerPosition</span> <span class="o">*</span><a href="https://pkg.go.dev/builtin#int"><span class="kt">int</span></a><span class="p">,</span> <span class="nx">colocalizeKnown</span> <a href="https://pkg.go.dev/builtin#bool"><span class="kt">bool</span></a><span class="p">,</span> <span class="nx">colocalizeUnknown</span> <a href="https://pkg.go.dev/builtin#bool"><span class="kt">bool</span></a><span class="p">)</span> <span class="o">*</span><a href="#GlobalModification"><span class="nx">GlobalModification</span></a></pre>
-  <p>NewGlobalModification creates a new GlobalModification instance
+  <p>NewGlobalModification creates a new GlobalModification instance.
+<p>Example:
+<pre>// Create a new global modification &apos;Carbamidomethyl&apos; for &apos;C&apos; residues
+mod := sequal.NewGlobalModification(&quot;Carbamidomethyl&quot;, []string{&quot;C&quot;}, &quot;fixed&quot;, nil, nil, false, false)
+
+fmt.Println(mod.ToProforma()) // &quot;&lt;[Carbamidomethyl]@C&gt;&quot;
+</pre>
 <h4 id="GlobalModification.GetGlobalModType">func (*GlobalModification) GetGlobalModType</h4>
   <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">gm</span> <span class="o">*</span><a href="#GlobalModification"><span class="nx">GlobalModification</span></a><span class="p">)</span> <span class="nf">GetGlobalModType</span><span class="p">()</span> <a href="https://pkg.go.dev/builtin#string"><span class="kt">string</span></a></pre>
   <p>GetGlobalModType returns the global modification type
@@ -518,6 +541,14 @@ It handles various ProForma 2.0 modification features including crosslinks, bran
 ambiguity groups, and localization scores. The modType parameter must be one of the
 valid modification types (static, variable, terminal, ambiguous, crosslink, branch,
 gap, labile, unknown_position, global).
+<p>Example:
+<pre>// Create a new &apos;Phospho&apos; modification
+mod := sequal.NewModification(&quot;Phospho&quot;, nil, nil, nil, &quot;static&quot;, false, 0, 79.966331, false,
+	nil, false, false, false, nil, false, false, nil, nil, nil, nil,
+	nil, nil, false, false, false)
+
+fmt.Println(mod.GetValue()) // &quot;Phospho&quot;
+</pre>
 <h4 id="Modification.Equal">func (*Modification) Equal</h4>
   <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">m</span> <span class="o">*</span><a href="#Modification"><span class="nx">Modification</span></a><span class="p">)</span> <span class="nf">Equal</span><span class="p">(</span><span class="nx">other</span> <a href="#Modification"><span class="nx">Modification</span></a><span class="p">)</span> <a href="https://pkg.go.dev/builtin#bool"><span class="kt">bool</span></a></pre>
   <p>Equal checks if two modifications are equal
@@ -726,6 +757,16 @@ charge state, ionic species information, and named entities (ProForma 2.1).
   <pre class="chroma"><span class="kd">func</span> <span class="nf">ParseProFormaDetailed</span><span class="p">(</span><span class="nx">proformaStr</span> <a href="https://pkg.go.dev/builtin#string"><span class="kt">string</span></a><span class="p">)</span> <span class="p">(</span><span class="o">*</span><a href="#ParseProFormaResult"><span class="nx">ParseProFormaResult</span></a><span class="p">,</span> <a href="https://pkg.go.dev/builtin#error"><span class="kt">error</span></a><span class="p">)</span></pre>
   <p>ParseProFormaDetailed parses a ProForma string and returns a structured result
 containing all parsed components including charge, ionic species, and named entities (ProForma 2.1).
+<p>Example:
+<pre>proformaStr := &quot;[Acetyl]-PEPTIDE/2&quot;
+result, err := sequal.ParseProFormaDetailed(proformaStr)
+if err != nil {
+	fmt.Println(&quot;Error:&quot;, err)
+}
+
+fmt.Println(&quot;Base Sequence:&quot;, result.BaseSequence)
+fmt.Println(&quot;Charge:&quot;, *result.Charge)
+</pre>
 <h3 id="PipeValue">type PipeValue</h3>
     <pre class="chroma"><span class="kd">type</span> <span class="nx">PipeValue</span> <span class="kd">struct</span> <span class="p">{</span>
 	<span class="c1">// contains filtered or unexported fields</span>
@@ -842,6 +883,16 @@ It can handle single sequences, multi-chain complexes, and chimeric peptidoforms
   <p>FromProforma creates a Sequence object from a ProForma notation string.
 Supports all ProForma 2.0 features including multi-chain sequences (//),
 chimeric sequences (+), and all modification types.
+<p>Example:
+<pre>proformaStr := &quot;PEPT[Phospho]IDE&quot;
+seq, err := sequal.FromProforma(proformaStr)
+if err != nil {
+	fmt.Println(&quot;Error:&quot;, err)
+}
+
+fmt.Println(seq.ToStrippedString()) // &quot;PEPTIDE&quot;
+fmt.Println(seq.ToProforma())      // &quot;PEPT[Phospho]IDE&quot;
+</pre>
 <h4 id="NewSequence">func NewSequence</h4>
   <pre class="chroma"><span class="kd">func</span> <span class="nf">NewSequence</span><span class="p">(</span><span class="nx">seq</span> <span class="kd">interface</span><span class="p">{},</span> <span class="nx">mods</span> <span class="kd">map</span><span class="p">[</span><a href="https://pkg.go.dev/builtin#int"><span class="kt">int</span></a><span class="p">][]</span><span class="o">*</span><a href="#Modification"><span class="nx">Modification</span></a><span class="p">,</span> <span class="nx">parse</span> <a href="https://pkg.go.dev/builtin#bool"><span class="kt">bool</span></a><span class="p">,</span>
 	<span class="nx">modPosition</span> <a href="https://pkg.go.dev/builtin#string"><span class="kt">string</span></a><span class="p">,</span> <span class="nx">chains</span> <span class="p">[]</span><span class="o">*</span><a href="#Sequence"><span class="nx">Sequence</span></a><span class="p">,</span> <span class="nx">globalMods</span> <span class="p">[]</span><span class="o">*</span><a href="#GlobalModification"><span class="nx">GlobalModification</span></a><span class="p">,</span>
@@ -924,7 +975,18 @@ If parse is true, the sequence will be parsed according to modPosition (&quot;le
   <p>ToMap converts the sequence to a map representation
 <h4 id="Sequence.ToProforma">func (*Sequence) ToProforma</h4>
   <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">s</span> <span class="o">*</span><a href="#Sequence"><span class="nx">Sequence</span></a><span class="p">)</span> <span class="nf">ToProforma</span><span class="p">()</span> <a href="https://pkg.go.dev/builtin#string"><span class="kt">string</span></a></pre>
-  <p>ToProforma converts the sequence to ProForma format
+  <p>ToProforma converts the sequence to ProForma format.
+<p>Example:
+<pre>// Create a sequence object
+seq, err := sequal.FromProforma(&quot;PEPT[Phospho]IDE&quot;)
+if err != nil {
+	fmt.Println(&quot;Error:&quot;, err)
+}
+
+// Convert back to ProForma string
+proformaStr := seq.ToProforma()
+fmt.Println(proformaStr) // &quot;PEPT[Phospho]IDE&quot;
+</pre>
 <h4 id="Sequence.ToStrippedString">func (*Sequence) ToStrippedString</h4>
   <pre class="chroma"><span class="kd">func</span> <span class="p">(</span><span class="nx">s</span> <span class="o">*</span><a href="#Sequence"><span class="nx">Sequence</span></a><span class="p">)</span> <span class="nf">ToStrippedString</span><span class="p">()</span> <a href="https://pkg.go.dev/builtin#string"><span class="kt">string</span></a></pre>
   <p>ToStrippedString returns the sequence as a string without any modification annotations
