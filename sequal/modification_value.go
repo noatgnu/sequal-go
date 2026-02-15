@@ -260,17 +260,63 @@ func _validateGlycan(glycan string) bool {
 		}
 		monoPattern += regexp.QuoteMeta(mono)
 	}
-	monoPattern += `)(\\d+)?`
+	monoPattern += `)((\\([1-9]\\d*\\))|[1-9]\\d*)?`
 
 	re := regexp.MustCompile(monoPattern)
 
 	i := 0
 	for i < len(glycanClean) {
+		if glycanClean[i] == '{' {
+			closeBrace := strings.Index(glycanClean[i:], "}")
+			if closeBrace == -1 {
+				return false
+			}
+			closeBrace += i
+
+			i = closeBrace + 1
+			isAtEnd := i == len(glycanClean)
+
+			if i < len(glycanClean) && glycanClean[i] == '(' {
+				closeParen := strings.Index(glycanClean[i:], ")")
+				if closeParen == -1 {
+					return false
+				}
+				closeParen += i
+				countStr := glycanClean[i+1 : closeParen]
+				matched, _ := regexp.MatchString(`^[1-9]\d*$`, countStr)
+				if !matched {
+					return false
+				}
+				i = closeParen + 1
+			} else if i < len(glycanClean) && unicode.IsDigit(rune(glycanClean[i])) {
+				start := i
+				for i < len(glycanClean) && unicode.IsDigit(rune(glycanClean[i])) {
+					i++
+				}
+				countStr := glycanClean[start:i]
+				matched, _ := regexp.MatchString(`^[1-9]\d*$`, countStr)
+				if !matched {
+					return false
+				}
+			} else if !isAtEnd {
+				return false
+			}
+			continue
+		}
+
 		match := re.FindStringSubmatch(glycanClean[i:])
 		if match == nil {
 			return false
 		}
-		i += len(match[0])
+
+		monoLength := len(match[0])
+		hasCount := len(match) > 2 && match[2] != ""
+		i += monoLength
+
+		isAtEnd := i == len(glycanClean)
+		if !hasCount && !isAtEnd {
+			return false
+		}
 	}
 
 	return i == len(glycanClean)
@@ -930,7 +976,7 @@ func validateGlycan(glycan string) bool {
 		return len(monos[i]) > len(monos[j])
 	})
 
-	// Build pattern for standard monosaccharides
+	// Build pattern for standard monosaccharides - count must start with 1-9
 	monoPattern := "^("
 	for i, mono := range monos {
 		if i > 0 {
@@ -938,11 +984,11 @@ func validateGlycan(glycan string) bool {
 		}
 		monoPattern += regexp.QuoteMeta(mono)
 	}
-	monoPattern += `)(\d+)?`
+	monoPattern += `)((\([1-9]\d*\))|[1-9]\d*)?`
 
 	// ProForma 2.1: Pattern for custom monosaccharides in curly braces
-	// Format: {Formula} or {Formula:z+N}
-	customMonoPattern := `^\{([A-Za-z0-9]+)(:z[+-]\d+)?\}(\d+)?`
+	// Format: {Formula} or {Formula:z+N} - count must start with 1-9
+	customMonoPattern := `^\{([A-Za-z0-9]+)(:z[+-]\d+)?\}((\([1-9]\d*\))|[1-9]\d*)?`
 
 	standardRe := regexp.MustCompile(monoPattern)
 	customRe := regexp.MustCompile(customMonoPattern)
@@ -954,17 +1000,32 @@ func validateGlycan(glycan string) bool {
 		if customMatch != nil {
 			// Validate the formula part
 			formula := customMatch[1]
-			if validateFormula(formula) {
-				i += len(customMatch[0])
-				continue
+			if !validateFormula(formula) {
+				return false
 			}
-			return false
+
+			monoLength := len(customMatch[0])
+			hasCount := len(customMatch) > 3 && customMatch[3] != ""
+			i += monoLength
+
+			isAtEnd := i == len(glycanClean)
+			if !hasCount && !isAtEnd {
+				return false
+			}
+			continue
 		}
 
 		// Try standard monosaccharide
 		standardMatch := standardRe.FindStringSubmatch(glycanClean[i:])
 		if standardMatch != nil {
-			i += len(standardMatch[0])
+			monoLength := len(standardMatch[0])
+			hasCount := len(standardMatch) > 2 && standardMatch[2] != ""
+			i += monoLength
+
+			isAtEnd := i == len(glycanClean)
+			if !hasCount && !isAtEnd {
+				return false
+			}
 			continue
 		}
 
