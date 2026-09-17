@@ -406,7 +406,7 @@ func TestTerminalModifications(t *testing.T) {
 			if err != nil {
 				t.Fatalf("Failed to parse ProForma '%s': %v", proforma, err)
 			}
-			
+
 			regenerated := seq.ToProforma()
 			if regenerated != proforma {
 				t.Errorf("Roundtrip failed. Expected '%s', got '%s'", proforma, regenerated)
@@ -417,33 +417,33 @@ func TestTerminalModifications(t *testing.T) {
 
 func TestChargeHandling(t *testing.T) {
 	tests := []struct {
-		name         string
-		proforma     string
-		expectedCharge *int
+		name            string
+		proforma        string
+		expectedCharge  *int
 		expectedSpecies *string
 	}{
 		{
-			name:         "Simple charge",
-			proforma:     "PEPTIDE/2",
-			expectedCharge: IntPtr(2),
+			name:            "Simple charge",
+			proforma:        "PEPTIDE/2",
+			expectedCharge:  IntPtr(2),
 			expectedSpecies: nil,
 		},
 		{
-			name:         "Negative charge",
-			proforma:     "PEPTIDE/-3",
-			expectedCharge: IntPtr(-3),
+			name:            "Negative charge",
+			proforma:        "PEPTIDE/-3",
+			expectedCharge:  IntPtr(-3),
 			expectedSpecies: nil,
 		},
 		{
-			name:         "Charge with ionic species",
-			proforma:     "PEPTIDE/2[+Na+]",
-			expectedCharge: IntPtr(2),
+			name:            "Charge with ionic species",
+			proforma:        "PEPTIDE/2[+Na+]",
+			expectedCharge:  IntPtr(2),
 			expectedSpecies: StringPtr("+Na+"),
 		},
 		{
-			name:         "Complex with modification and charge",
-			proforma:     "ELVIS[Phospho]K/3",
-			expectedCharge: IntPtr(3),
+			name:            "Complex with modification and charge",
+			proforma:        "ELVIS[Phospho]K/3",
+			expectedCharge:  IntPtr(3),
 			expectedSpecies: nil,
 		},
 	}
@@ -486,23 +486,23 @@ func TestChargeHandling(t *testing.T) {
 
 func TestGlobalModifications(t *testing.T) {
 	tests := []struct {
-		name              string
-		proforma          string
+		name               string
+		proforma           string
 		expectedGlobalMods int
 	}{
 		{
-			name:              "Fixed modification",
-			proforma:          "<[Carbamidomethyl]@C>PEPTCDE",
+			name:               "Fixed modification",
+			proforma:           "<[Carbamidomethyl]@C>PEPTCDE",
 			expectedGlobalMods: 1,
 		},
 		{
-			name:              "Isotope labeling",
-			proforma:          "<15N>PEPTIDE",
+			name:               "Isotope labeling",
+			proforma:           "<15N>PEPTIDE",
 			expectedGlobalMods: 1,
 		},
 		{
-			name:              "Multiple global mods",
-			proforma:          "<15N><[Carbamidomethyl]@C>PEPTCDE",
+			name:               "Multiple global mods",
+			proforma:           "<15N><[Carbamidomethyl]@C>PEPTCDE",
 			expectedGlobalMods: 2,
 		},
 	}
@@ -524,25 +524,25 @@ func TestGlobalModifications(t *testing.T) {
 
 func TestChimericSequences(t *testing.T) {
 	tests := []struct {
-		name               string
-		proforma           string
+		name                 string
+		proforma             string
 		expectedPeptidoforms int
-		expectedFirstSeq   string
-		expectedSecondSeq  string
+		expectedFirstSeq     string
+		expectedSecondSeq    string
 	}{
 		{
-			name:               "Basic chimeric",
-			proforma:           "PEPTIDE/2+ANOTHER/3",
+			name:                 "Basic chimeric",
+			proforma:             "PEPTIDE/2+ANOTHER/3",
 			expectedPeptidoforms: 2,
-			expectedFirstSeq:   "PEPTIDE",
-			expectedSecondSeq:  "ANOTHER",
+			expectedFirstSeq:     "PEPTIDE",
+			expectedSecondSeq:    "ANOTHER",
 		},
 		{
-			name:               "Complex chimeric with modifications",
-			proforma:           "[Acetyl]-PEP[+79.966]TIDE-[Amidated]/2[+Na+]+S[Phospho]EQ/3",
+			name:                 "Complex chimeric with modifications",
+			proforma:             "[Acetyl]-PEP[+79.966]TIDE-[Amidated]/2[+Na+]+S[Phospho]EQ/3",
 			expectedPeptidoforms: 2,
-			expectedFirstSeq:   "PEPTIDE",
-			expectedSecondSeq:  "SEQ",
+			expectedFirstSeq:     "PEPTIDE",
+			expectedSecondSeq:    "SEQ",
 		},
 	}
 
@@ -635,7 +635,7 @@ func TestRoundTripConversion(t *testing.T) {
 
 			// Compare the stripped sequences
 			if seq.ToStrippedString() != seq2.ToStrippedString() {
-				t.Errorf("Stripped sequences don't match: '%s' vs '%s'", 
+				t.Errorf("Stripped sequences don't match: '%s' vs '%s'",
 					seq.ToStrippedString(), seq2.ToStrippedString())
 			}
 		})
@@ -711,33 +711,33 @@ func TestUtilityFunctions(t *testing.T) {
 func TestComplexProFormaExamples(t *testing.T) {
 	// These are examples from the TypeScript package README
 	tests := []struct {
-		name     string
-		proforma string
+		name        string
+		proforma    string
 		shouldParse bool
 	}{
 		{
-			name:     "Joint representation",
-			proforma: "ELVIS[U:Phospho|+79.966331]K",
+			name:        "Joint representation",
+			proforma:    "ELVIS[U:Phospho|+79.966331]K",
 			shouldParse: true,
 		},
 		{
-			name:     "Observed mass",
-			proforma: "ELVIS[U:Phospho|Obs:+79.978]K",
+			name:        "Observed mass",
+			proforma:    "ELVIS[U:Phospho|Obs:+79.978]K",
 			shouldParse: true,
 		},
 		{
-			name:     "Crosslinks",
-			proforma: "PEPTK[XL:DSS#XL1|+138.068|INFO:reaction=NHS]IDE",
+			name:        "Crosslinks",
+			proforma:    "PEPTK[XL:DSS#XL1|+138.068|INFO:reaction=NHS]IDE",
 			shouldParse: true,
 		},
 		{
-			name:     "Gap notation",
-			proforma: "RTAAX[+367.0537]WT",
+			name:        "Gap notation",
+			proforma:    "RTAAX[+367.0537]WT",
 			shouldParse: true,
 		},
 		{
-			name:     "Multiple info tags",
-			proforma: "ELVIS[Phospho|INFO:newly discovered|INFO:Created on 2021-06]K",
+			name:        "Multiple info tags",
+			proforma:    "ELVIS[Phospho|INFO:newly discovered|INFO:Created on 2021-06]K",
 			shouldParse: true,
 		},
 	}

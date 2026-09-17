@@ -33,19 +33,40 @@ var AAMass = map[string]float64{
 	"V": 99.068414,
 	"X": 0,
 	"O": 150.03794,
-	"U": 255.15829, // Note: U appears twice in original Python code
+	"U": 255.15829,  // Note: U appears twice in original Python code
+	"B": 114.534935, // avg of Asp/Asn
+	"Z": 128.550586, // avg of Glu/Gln
+	"J": 113.084064, // Leu/Ile, exact
 }
 
-// GlycanBlockDict maps glycan block names to their masses
+// GlycanBlockDict maps glycan block names to their monoisotopic residue masses (Da)
 var GlycanBlockDict = map[string]float64{
-	"HexNAc":  203.079372520,
 	"Hex":     162.0528234185,
+	"HexNAc":  203.079372520,
+	"HexS":    242.009638,
+	"HexP":    242.019154,
+	"HexNAcS": 283.036187,
+	"HexN":    161.068808,
+	"HexNS":   241.025623,
+	"dHex":    146.057908799,
 	"Fuc":     146.057908799,
+	"aHex":    176.032088,
+	"en,aHex": 158.021523,
+	"Neu":     249.084852,
 	"NeuAc":   291.0954165066,
+	"NeuGc":   307.0903311261,
+	"Sug":     42.010565,
+	"Tri":     72.021129,
+	"Tet":     102.031694,
+	"Pen":     132.0422587348,
+	"Hep":     192.063388,
+	"Oct":     222.073953,
+	"Non":     252.084517,
+	"Dec":     282.095082,
+	"Kdo":     220.058303,
+	"Kdn":     250.068867,
 	"Sulfo":   79.9568148602,
 	"Phospho": 79.9663305228,
-	"Pent":    132.0422587348,
-	"NeuGc":   307.0903311261,
 }
 
 // Monosaccharides is a set of known monosaccharide names
@@ -56,9 +77,25 @@ var Monosaccharides = map[string]bool{
 	"HexS":    true,
 	"HexP":    true,
 	"HexNAcS": true,
+	"HexN":    true,
+	"HexNS":   true,
 	"dHex":    true,
+	"Fuc":     true,
+	"aHex":    true,
+	"en,aHex": true,
+	"Neu":     true,
 	"NeuAc":   true,
 	"NeuGc":   true,
+	"Sug":     true,
+	"Tri":     true,
+	"Tet":     true,
 	"Pen":     true,
-	"Fuc":     true,
+	"Hep":     true,
+	"Oct":     true,
+	"Non":     true,
+	"Dec":     true,
+	"Kdo":     true,
+	"Kdn":     true,
+	"Sulfo":   true,
+	"Phospho": true,
 }

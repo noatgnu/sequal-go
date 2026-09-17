@@ -17,6 +17,9 @@ type ProFormaParser struct {
 	branchRefPattern    *regexp.Regexp
 }
 
+// isotopePattern matches a global isotope token, e.g. D, T, 13C, 15N.
+var isotopePattern = regexp.MustCompile(`^(?:[Dd]|[Tt]|\d+[A-Z][a-z]?)$`)
+
 // NewProFormaParser creates a new ProFormaParser with pre-compiled regex patterns
 // for parsing mass shifts, crosslinks, and branches.
 func NewProFormaParser() *ProFormaParser {
@@ -286,6 +289,10 @@ func (p *ProFormaParser) Parse(proformaStr string) (string, map[string][]*Modifi
 				modValue = modPart[1 : len(modPart)-1]
 			}
 
+			if strings.Contains(modValue, "#") {
+				return "", nil, nil, nil, nil, fmt.Errorf("fixed global modifications cannot be ambiguous, cross-linked, or branched")
+			}
+
 			// ProForma 2.1: Parse placement control tags (Section 11.2)
 			var positionConstraint []string
 			var limitPerPosition *int
@@ -317,7 +324,10 @@ func (p *ProFormaParser) Parse(proformaStr string) (string, map[string][]*Modifi
 			targetResidues := strings.Split(targets, ",")
 			globalMods = append(globalMods, NewGlobalModification(modValue, targetResidues, "fixed", positionConstraint, limitPerPosition, colocalizeKnown, colocalizeUnknown))
 		} else {
-			// Isotope labeling
+			// Isotope labeling: must be D, T, or an isotope number followed by an element symbol
+			if !isotopePattern.MatchString(globalModStr) {
+				return "", nil, nil, nil, nil, fmt.Errorf("invalid global isotope modification '%s'", globalModStr)
+			}
 			globalMods = append(globalMods, NewGlobalModification(globalModStr, nil, "isotope", nil, nil, false, false))
 		}
 	}
@@ -338,6 +348,9 @@ func (p *ProFormaParser) Parse(proformaStr string) (string, map[string][]*Modifi
 						setModsAtPosition(-4, currentMods)
 					}
 					i++
+				} else {
+					// No '?' terminator: not actually an unknown-position block, leave string as-is.
+					i = 0
 				}
 				unknownPosMods = nil
 				break
@@ -387,11 +400,20 @@ func (p *ProFormaParser) Parse(proformaStr string) (string, map[string][]*Modifi
 	// Parse labile modifications
 	i := 0
 	for i < len(proformaStr) && proformaStr[i] == '{' {
-		j := strings.Index(proformaStr[i:], "}")
-		if j == -1 {
+		braceDepth := 1
+		j := i + 1
+		for j < len(proformaStr) && braceDepth > 0 {
+			if proformaStr[j] == '{' {
+				braceDepth++
+			} else if proformaStr[j] == '}' {
+				braceDepth--
+			}
+			j++
+		}
+		if braceDepth > 0 {
 			return "", nil, nil, nil, nil, fmt.Errorf("unclosed curly brace at position %d", i)
 		}
-		j += i
+		j--
 
 		modStr := proformaStr[i+1 : j]
 
@@ -495,6 +517,9 @@ func (p *ProFormaParser) Parse(proformaStr string) (string, map[string][]*Modifi
 
 		if terminatorPos != -1 {
 			cTerminalPart := string(proformaRunes[terminatorPos+1:])
+			if cTerminalPart == "" {
+				return "", nil, nil, nil, nil, fmt.Errorf("dangling C-terminal separator with no modification")
+			}
 			proformaStr = string(proformaRunes[:terminatorPos])
 
 			currentPos := 0
@@ -538,6 +563,9 @@ func (p *ProFormaParser) Parse(proformaStr string) (string, map[string][]*Modifi
 		char := proformaStr[i]
 
 		if i+1 < len(proformaStr) && proformaStr[i:i+2] == "(?" {
+			if len(rangeStack) > 0 {
+				return "", nil, nil, nil, nil, fmt.Errorf("sequence ambiguity must not overlap with a range modification")
+			}
 			closingParen := strings.Index(proformaStr[i+2:], ")")
 			if closingParen == -1 {
 				return "", nil, nil, nil, nil, fmt.Errorf("unclosed sequence ambiguity parenthesis")
@@ -553,6 +581,9 @@ func (p *ProFormaParser) Parse(proformaStr string) (string, map[string][]*Modifi
 
 		switch char {
 		case '(':
+			if len(rangeStack) > 0 {
+				return "", nil, nil, nil, nil, fmt.Errorf("overlapping range modifications are not supported")
+			}
 			rangeStack = append(rangeStack, len(baseSequence))
 			i++
 			continue
@@ -565,6 +596,10 @@ func (p *ProFormaParser) Parse(proformaStr string) (string, map[string][]*Modifi
 			rangeStart := rangeStack[len(rangeStack)-1]
 			rangeStack = rangeStack[:len(rangeStack)-1]
 			rangeEnd := len(baseSequence) - 1
+
+			if rangeEnd < rangeStart {
+				return "", nil, nil, nil, nil, fmt.Errorf("empty range group '()' is not valid")
+			}
 
 			// Look for modification after the range
 			j := i + 1
@@ -642,11 +677,20 @@ func (p *ProFormaParser) Parse(proformaStr string) (string, map[string][]*Modifi
 			i = j
 
 		case '{':
-			j := strings.Index(proformaStr[i:], "}")
-			if j == -1 {
+			braceDepth := 1
+			j := i + 1
+			for j < len(proformaStr) && braceDepth > 0 {
+				if proformaStr[j] == '{' {
+					braceDepth++
+				} else if proformaStr[j] == '}' {
+					braceDepth--
+				}
+				j++
+			}
+			if braceDepth > 0 {
 				return "", nil, nil, nil, nil, fmt.Errorf("unclosed curly brace at position %d", i)
 			}
-			j += i
+			j--
 
 			modStr := proformaStr[i+1 : j]
 			mod := p.createModification(modStr, map[string]interface{}{"isAmbiguous": true})
@@ -788,6 +832,13 @@ func (p *ProFormaParser) createModification(modStr string, options map[string]in
 	ambiguityRefPattern := regexp.MustCompile(`#([A-Za-z0-9]+)(?:\(([0-9.]+)\))?$`)
 
 	if strings.Contains(modStr, "#") && !isCrosslinkRef && !isBranch && !isBranchRef && crosslinkId == nil {
+		// A labile modification keeps its "labile" type even when it also carries a location
+		// label (spec 7.9); everything else defaults to "ambiguous" as before.
+		labelledModType := "ambiguous"
+		if isLabile {
+			labelledModType = "labile"
+		}
+
 		if matches := ambiguityPattern.FindStringSubmatch(modStr); matches != nil && !strings.HasPrefix(matches[2], "XL") {
 			modStr = matches[1]
 			ambiguityGroup := matches[2]
@@ -797,7 +848,7 @@ func (p *ProFormaParser) createModification(modStr string, options map[string]in
 					localizationScore = &score
 				}
 			}
-			return NewModification(modStr, nil, nil, nil, "ambiguous", false, 0, 0.0, false,
+			return NewModification(modStr, nil, nil, nil, labelledModType, isLabile, 0, 0.0, false,
 				nil, false, false, false, &ambiguityGroup, false, inRange, rangeStart, rangeEnd, localizationScore, modValue,
 				positionConstraint, limitPerPosition, colocalizeKnown, colocalizeUnknown, p.isIonTypeModification(modStr))
 		} else if matches := ambiguityRefPattern.FindStringSubmatch(modStr); matches != nil && !strings.HasPrefix(matches[1], "XL") {
@@ -808,7 +859,7 @@ func (p *ProFormaParser) createModification(modStr string, options map[string]in
 					localizationScore = &score
 				}
 			}
-			return NewModification("", nil, nil, nil, "ambiguous", false, 0, 0.0, false,
+			return NewModification("", nil, nil, nil, labelledModType, isLabile, 0, 0.0, false,
 				nil, false, false, false, &ambiguityGroup, true, inRange, rangeStart, rangeEnd, localizationScore, modValue,
 				positionConstraint, limitPerPosition, colocalizeKnown, colocalizeUnknown, p.isIonTypeModification(modStr))
 		}
@@ -868,17 +919,18 @@ func (p *ProFormaParser) parseChargeInfo(proformaStr string) ([]interface{}, err
 		i++
 	}
 
-	if startDigit == i { // No digits found
-		return []interface{}{proformaStr, nil, nil}, nil
+	var chargeValuePtr *int
+	if startDigit != i {
+		chargeValue, err := strconv.Atoi(afterCharge[startDigit:i])
+		if err != nil {
+			return []interface{}{proformaStr, nil, nil}, nil
+		}
+		chargeValue *= sign
+		chargeValuePtr = &chargeValue
 	}
 
-	chargeValue, err := strconv.Atoi(afterCharge[startDigit:i])
-	if err != nil {
-		return []interface{}{proformaStr, nil, nil}, nil
-	}
-	chargeValue *= sign
-
-	// Check for ionic species in square brackets
+	// Check for ionic species / charge carriers in square brackets. These may appear on
+	// their own, e.g. "/[Na:z+1]", without a preceding numeric charge (section 11.5).
 	remaining := afterCharge[i:]
 	var ionicSpecies *string
 
@@ -907,13 +959,17 @@ func (p *ProFormaParser) parseChargeInfo(proformaStr string) ([]interface{}, err
 		}
 	}
 
+	if chargeValuePtr == nil && ionicSpecies == nil {
+		return []interface{}{proformaStr, nil, nil}, nil
+	}
+
 	// Reconstruct the string without charge information
 	resultStr := beforeCharge
 	if len(remaining) > 0 {
 		resultStr += remaining
 	}
 
-	return []interface{}{resultStr, &chargeValue, ionicSpecies}, nil
+	return []interface{}{resultStr, chargeValuePtr, ionicSpecies}, nil
 }
 
 // isIonTypeModification detects if a modification is an ion type (ProForma 2.1 Section 11.6)
@@ -925,14 +981,13 @@ func (p *ProFormaParser) isIonTypeModification(modStr string) bool {
 		return true
 	}
 
-	// Check for known Unimod ion type IDs
+	// y-type-ion has no Unimod accession per spec, so it is intentionally absent here.
 	ionTypeUnimodIDs := map[string]bool{
 		"140":  true, // a-type-ion
 		"2132": true, // b-type-ion
-		"4":    true, // c-type-ion
-		"24":   true, // x-type-ion
-		"2133": true, // y-type-ion
-		"23":   true, // z-type-ion
+		"2141": true, // c-type-ion
+		"2142": true, // x-type-ion
+		"2143": true, // z-type-ion
 	}
 
 	if strings.HasPrefix(modStr, "UNIMOD:") || strings.HasPrefix(modStr, "U:") {

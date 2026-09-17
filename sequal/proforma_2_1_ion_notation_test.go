@@ -79,11 +79,11 @@ func TestIonNotation_UnimodIonReferences(t *testing.T) {
 	}{
 		{"a-type-ion", "UNIMOD:140", true},
 		{"b-type-ion", "UNIMOD:2132", true},
-		{"c-type-ion", "UNIMOD:4", true},
-		{"x-type-ion", "UNIMOD:24", true},
-		{"y-type-ion", "UNIMOD:2133", true},
-		{"z-type-ion", "UNIMOD:23", true},
+		{"c-type-ion", "UNIMOD:2141", true},
+		{"x-type-ion", "UNIMOD:2142", true},
+		{"z-type-ion", "UNIMOD:2143", true},
 		{"non-ion", "UNIMOD:21", false}, // Phospho
+		{"non-ion (no y accession)", "UNIMOD:2133", false},
 	}
 
 	for _, tt := range tests {
@@ -114,7 +114,7 @@ func TestIonNotation_ShortUnimodReferences(t *testing.T) {
 	}{
 		{"a-type-ion short", "U:140", true},
 		{"b-type-ion short", "U:2132", true},
-		{"c-type-ion short", "U:4", true},
+		{"c-type-ion short", "U:2141", true},
 		{"non-ion short", "U:21", false},
 	}
 
@@ -172,6 +172,8 @@ func TestIonNotation_NonIonModifications(t *testing.T) {
 		"Oxidation",
 		"+79.966",
 		"UNIMOD:21", // Phospho
+		"UNIMOD:4",  // Carbamidomethyl
+		"UNIMOD:24", // Propionamide
 	}
 
 	for _, modType := range tests {

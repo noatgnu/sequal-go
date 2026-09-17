@@ -249,6 +249,14 @@ func (m *Modification) IsCrosslinkRef() bool {
 	return m.isCrosslinkRef
 }
 
+// IsBranchRef returns true if this modification is a reference to a branch (e.g. "[#BRANCH]").
+func (m *Modification) IsBranchRef() bool {
+	if m.modValue != nil {
+		return m.modValue.IsBranchRef()
+	}
+	return m.isBranchRef
+}
+
 // GetSource returns the modification database source (e.g., "Unimod", "PSI-MOD").
 func (m *Modification) GetSource() *string {
 	if m.modValue != nil {

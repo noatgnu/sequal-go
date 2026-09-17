@@ -107,29 +107,16 @@ func NewSequence(seq interface{}, mods map[int][]*Modification, parse bool,
 //	fmt.Println(seq.IsChimeric()) // true
 //	fmt.Println(len(seq.GetPeptidoforms())) // 2
 func FromProforma(proformaStr string) (*Sequence, error) {
-	if strings.Contains(proformaStr, "//") {
-		chains := strings.Split(proformaStr, "//")
-		mainSeq, err := FromProforma(chains[0])
-		if err != nil {
-			return nil, err
-		}
-		mainSeq.isMultiChain = true
-		mainSeq.chains = []*Sequence{mainSeq}
+	return fromProforma(proformaStr, true)
+}
 
-		for i := 1; i < len(chains); i++ {
-			chain, err := FromProforma(chains[i])
-			if err != nil {
-				return nil, err
-			}
-			mainSeq.chains = append(mainSeq.chains, chain)
-		}
-
-		return mainSeq, nil
-	}
-
+// validateCrosslinksAndBranches is false when parsing one chain of a larger "//" ion, since that
+// check must run once, after all chains are combined, not per chain.
+func fromProforma(proformaStr string, validateCrosslinksAndBranches bool) (*Sequence, error) {
+	// "+" is the outermost separator and must be split before "//".
 	peptidoforms := SplitChimericProforma(proformaStr)
 	if len(peptidoforms) > 1 {
-		mainSeq, err := FromProforma(peptidoforms[0])
+		mainSeq, err := fromProforma(peptidoforms[0], true)
 		if err != nil {
 			return nil, err
 		}
@@ -137,12 +124,52 @@ func FromProforma(proformaStr string) (*Sequence, error) {
 		mainSeq.peptidoforms = []*Sequence{mainSeq}
 
 		for i := 1; i < len(peptidoforms); i++ {
-			peptidoform, err := FromProforma(peptidoforms[i])
+			// Global modifications may only appear once, before the first "+"-joined member.
+			if strings.HasPrefix(peptidoforms[i], "<") {
+				return nil, fmt.Errorf("global modifications must appear once, before all chimeric peptidoform ions")
+			}
+
+			peptidoform, err := fromProforma(peptidoforms[i], true)
 			if err != nil {
 				return nil, err
 			}
 			peptidoform.isChimeric = true
 			mainSeq.peptidoforms = append(mainSeq.peptidoforms, peptidoform)
+		}
+
+		return mainSeq, nil
+	}
+
+	chains := SplitInterchainProforma(proformaStr)
+	if len(chains) > 1 {
+		mainSeq, err := fromProforma(chains[0], false)
+		if err != nil {
+			return nil, err
+		}
+		mainSeq.isMultiChain = true
+		mainSeq.chains = []*Sequence{mainSeq}
+
+		for i := 1; i < len(chains); i++ {
+			// Ion/ion-set names (>>name)/(>>>name) may only appear once, on the first chain.
+			if strings.HasPrefix(chains[i], "(>>") {
+				return nil, fmt.Errorf("peptidoform-ion and ion-set names must appear once, before all chains")
+			}
+
+			chain, err := fromProforma(chains[i], false)
+			if err != nil {
+				return nil, err
+			}
+			mainSeq.chains = append(mainSeq.chains, chain)
+		}
+
+		if validateCrosslinksAndBranches {
+			var allMods []*Modification
+			for _, chain := range mainSeq.chains {
+				allMods = append(allMods, chain.allModifications()...)
+			}
+			if err := validateCrosslinkAndBranchLabels(allMods); err != nil {
+				return nil, err
+			}
 		}
 
 		return mainSeq, nil
@@ -162,20 +189,27 @@ func FromProforma(proformaStr string) (*Sequence, error) {
 	peptidoformIonName := result.PeptidoformIonName
 	compoundIonName := result.CompoundIonName
 
-	seq := NewSequence(
-		baseSequence,
-		make(map[int][]*Modification),
-		true,
-		"right",
-		[]*Sequence{},
-		globalMods,
-		sequenceAmbiguities,
-		charge,
-		species,
-		peptidoformName,
-		peptidoformIonName,
-		compoundIonName,
-	)
+	// Built directly, not via NewSequence, since NewSequence discards parseSequence's error.
+	seq := &Sequence{
+		seq:                 make([]*AminoAcid, 0),
+		chains:              []*Sequence{},
+		isMultiChain:        false,
+		mods:                make(map[int][]*Modification),
+		globalMods:          globalMods,
+		sequenceAmbiguities: sequenceAmbiguities,
+		charge:              charge,
+		ionicSpecies:        species,
+		isChimeric:          false,
+		peptidoforms:        make([]*Sequence, 0),
+		peptidoformName:     peptidoformName,
+		peptidoformIonName:  peptidoformIonName,
+		compoundIonName:     compoundIonName,
+	}
+
+	if err := seq.parseSequence(baseSequence, "right"); err != nil {
+		return nil, err
+	}
+	seq.seqLength = len(seq.seq)
 
 	if charge != nil {
 		seq.isChimeric = true
@@ -199,6 +233,17 @@ func FromProforma(proformaStr string) (*Sequence, error) {
 	}
 
 	seq.peptidoforms = []*Sequence{seq}
+
+	// Ambiguity groups are always scoped to a single linear peptide.
+	if err := validateAmbiguityLabels(seq.allModifications()); err != nil {
+		return nil, err
+	}
+	if validateCrosslinksAndBranches {
+		if err := validateCrosslinkAndBranchLabels(seq.allModifications()); err != nil {
+			return nil, err
+		}
+	}
+
 	return seq, nil
 }
 
@@ -225,6 +270,10 @@ func (s *Sequence) parseSequence(seq interface{}, modPosition string) error {
 		}
 	default:
 		return fmt.Errorf("unsupported sequence type")
+	}
+
+	if err := validateEnclosureBalance(seqStr); err != nil {
+		return err
 	}
 
 	for _, block := range s.sequenceIterator(seqStr) {
@@ -286,6 +335,26 @@ func (s *Sequence) parseSequence(seq interface{}, modPosition string) error {
 type SequenceBlock struct {
 	Value string
 	IsMod bool
+}
+
+// validateEnclosureBalance checks every '(', '[', '{' in seq has a matching close.
+func validateEnclosureBalance(seq string) error {
+	depth := 0
+	for _, char := range seq {
+		switch char {
+		case '(', '[', '{':
+			depth++
+		case ')', ']', '}':
+			depth--
+			if depth < 0 {
+				return fmt.Errorf("unmatched closing bracket in sequence %q", seq)
+			}
+		}
+	}
+	if depth != 0 {
+		return fmt.Errorf("unclosed bracket in sequence %q", seq)
+	}
+	return nil
 }
 
 // sequenceIterator iterates through sequence elements, identifying blocks and modifications
@@ -379,21 +448,27 @@ func (s *Sequence) chainToProforma(chain *Sequence) string {
 		result += mod.ToProforma()
 	}
 
-	// Handle unknown position modifications (-4)
-	if unknownMods, exists := chain.mods[-4]; exists {
-		unknownModsByValue := make(map[string]int)
+	// Handle unknown position modifications (-4): one or more [mod]^N groups followed by a
+	// single trailing '?', not one '?' per group.
+	if unknownMods, exists := chain.mods[-4]; exists && len(unknownMods) > 0 {
+		var order []string
+		counts := make(map[string]int)
 		for _, mod := range unknownMods {
 			modProforma := mod.ToProforma()
-			unknownModsByValue[modProforma]++
+			if counts[modProforma] == 0 {
+				order = append(order, modProforma)
+			}
+			counts[modProforma]++
 		}
 
-		for modValue, count := range unknownModsByValue {
-			if count > 1 {
-				result += fmt.Sprintf("[%s]^%d?", modValue, count)
+		for _, modValue := range order {
+			if count := counts[modValue]; count > 1 {
+				result += fmt.Sprintf("[%s]^%d", modValue, count)
 			} else {
-				result += fmt.Sprintf("[%s]?", modValue)
+				result += fmt.Sprintf("[%s]", modValue)
 			}
 		}
+		result += "?"
 	}
 
 	// Handle labile modifications (-3)
@@ -635,6 +710,18 @@ func (s *Sequence) GetSeq() []*AminoAcid {
 // GetMods returns the modifications map
 func (s *Sequence) GetMods() map[int][]*Modification {
 	return s.mods
+}
+
+// allModifications returns every modification attached anywhere in this sequence.
+func (s *Sequence) allModifications() []*Modification {
+	var mods []*Modification
+	for _, aa := range s.seq {
+		mods = append(mods, aa.GetMods()...)
+	}
+	for _, posMods := range s.mods {
+		mods = append(mods, posMods...)
+	}
+	return mods
 }
 
 // GetGlobalMods returns the global modifications

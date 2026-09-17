@@ -31,15 +31,18 @@ type AminoAcid struct {
 //	aa, _ = sequal.NewAminoAcid("X", &pos, &mass)
 //	fmt.Println(*aa.GetMass()) // 123.456
 func NewAminoAcid(value string, position *int, mass *float64) (*AminoAcid, error) {
-	if _, exists := AAMass[value]; !exists && mass == nil {
-		return nil, fmt.Errorf("unknown amino acid '%s' and no mass provided", value)
-	}
-
 	var inferredMass float64
 	if mass != nil {
 		inferredMass = *mass
 	} else {
-		inferredMass = AAMass[value]
+		// Amino acid letters are case-insensitive per spec section 5.
+		upperValue := strings.ToUpper(value)
+		aaMass, exists := AAMass[upperValue]
+		if !exists {
+			return nil, fmt.Errorf("unknown amino acid '%s' and no mass provided", value)
+		}
+		value = upperValue
+		inferredMass = aaMass
 	}
 
 	baseBlock := NewBaseBlock(value, position, false, &inferredMass)

@@ -43,12 +43,30 @@ func TestAminoAcidCreation(t *testing.T) {
 		},
 		{
 			name:          "Unknown without mass",
+			value:         "1",
+			position:      IntPtr(1),
+			mass:          nil,
+			expectedValue: "1",
+			expectedMass:  0,
+			shouldError:   true,
+		},
+		{
+			name:          "Ambiguous Z",
 			value:         "Z",
 			position:      IntPtr(1),
 			mass:          nil,
 			expectedValue: "Z",
-			expectedMass:  0,
-			shouldError:   true,
+			expectedMass:  128.550586,
+			shouldError:   false,
+		},
+		{
+			name:          "Lowercase alanine",
+			value:         "a",
+			position:      IntPtr(0),
+			mass:          nil,
+			expectedValue: "A",
+			expectedMass:  71.037114,
+			shouldError:   false,
 		},
 	}
 

@@ -20,11 +20,11 @@ func CalculateHashCode(input string) int32 {
 // CountUniqueElements counts unique elements in a sequence of BaseBlock objects
 func CountUniqueElements(seq []BaseBlock) map[string]int {
 	elements := make(map[string]int)
-	
+
 	for _, item := range seq {
 		// Count the base block value
 		elements[item.GetValue()]++
-		
+
 		// Count modifications if the item is an amino acid with modifications
 		if aminoAcid, ok := item.(*AminoAcid); ok {
 			for _, mod := range aminoAcid.GetMods() {
@@ -32,7 +32,7 @@ func CountUniqueElements(seq []BaseBlock) map[string]int {
 			}
 		}
 	}
-	
+
 	return elements
 }
 
@@ -41,15 +41,15 @@ func VariablePositionPlacementGenerator(positions []int) [][]int {
 	if len(positions) == 0 {
 		return [][]int{{}}
 	}
-	
+
 	// Sort positions for consistent output
 	sortedPositions := make([]int, len(positions))
 	copy(sortedPositions, positions)
 	sort.Ints(sortedPositions)
-	
+
 	var result [][]int
 	n := len(sortedPositions)
-	
+
 	// Generate all possible combinations (2^n possibilities)
 	for i := 0; i < (1 << n); i++ {
 		var combination []int
@@ -61,7 +61,7 @@ func VariablePositionPlacementGenerator(positions []int) [][]int {
 		}
 		result = append(result, combination)
 	}
-	
+
 	return result
 }
 
@@ -73,18 +73,18 @@ func OrderedSerializePositionDict(positions map[int]interface{}) (string, error)
 		keys = append(keys, k)
 	}
 	sort.Ints(keys)
-	
+
 	// Create ordered map
 	sortedObj := make(map[string]interface{})
 	for _, key := range keys {
 		sortedObj[fmt.Sprintf("%d", key)] = positions[key]
 	}
-	
+
 	jsonBytes, err := json.Marshal(sortedObj)
 	if err != nil {
 		return "", fmt.Errorf("could not serialize positions dictionary: %w", err)
 	}
-	
+
 	return string(jsonBytes), nil
 }
 
@@ -93,7 +93,7 @@ func SplitChimericProforma(proformaStr string) []string {
 	var parts []string
 	currentPartStart := 0
 	bracketLevel := 0
-	
+
 	for i, char := range proformaStr {
 		switch char {
 		case '[', '{', '(':
@@ -113,7 +113,7 @@ func SplitChimericProforma(proformaStr string) []string {
 			}
 		}
 	}
-	
+
 	// Add the last part of the string
 	if currentPartStart < len(proformaStr) {
 		part := proformaStr[currentPartStart:]
@@ -121,7 +121,34 @@ func SplitChimericProforma(proformaStr string) []string {
 			parts = append(parts, part)
 		}
 	}
-	
+
+	return parts
+}
+
+// SplitInterchainProforma splits a ProForma string on "//" outside of any brackets
+func SplitInterchainProforma(proformaStr string) []string {
+	var parts []string
+	currentPartStart := 0
+	bracketLevel := 0
+
+	for i := 0; i < len(proformaStr); i++ {
+		switch proformaStr[i] {
+		case '[', '{', '(':
+			bracketLevel++
+		case ']', '}', ')':
+			if bracketLevel > 0 {
+				bracketLevel--
+			}
+		case '/':
+			if bracketLevel == 0 && i+1 < len(proformaStr) && proformaStr[i+1] == '/' {
+				parts = append(parts, proformaStr[currentPartStart:i])
+				i++
+				currentPartStart = i + 1
+			}
+		}
+	}
+
+	parts = append(parts, proformaStr[currentPartStart:])
 	return parts
 }
 
@@ -130,7 +157,7 @@ func DeepCopyModifications(mods []*Modification) []*Modification {
 	if mods == nil {
 		return nil
 	}
-	
+
 	result := make([]*Modification, len(mods))
 	for i, mod := range mods {
 		if mod != nil {
@@ -139,7 +166,7 @@ func DeepCopyModifications(mods []*Modification) []*Modification {
 			*result[i] = *mod
 		}
 	}
-	
+
 	return result
 }
 

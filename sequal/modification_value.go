@@ -22,7 +22,7 @@ func NewModificationValue(value string, mass *float64) *ModificationValue {
 	mv := &ModificationValue{
 		pipeValues: make([]*PipeValue, 0),
 		knownSources: map[string]bool{
-			"Unimod": true, "U": true, "PSI-MOD": true, "M": true,
+			"Unimod": true, "UNIMOD": true, "U": true, "PSI-MOD": true, "M": true,
 			"RESID": true, "R": true, "XL-MOD": true, "X": true,
 			"XLMOD": true, "GNO": true, "G": true, "MOD": true,
 			"Obs": true, "Formula": true, "FORMULA": true, "GLYCAN": true,
@@ -176,152 +176,6 @@ func (mv *ModificationValue) ToString() string {
 	return strings.Join(parts, "|")
 }
 
-// _validateFormula statically validates a chemical formula
-func _validateFormula(formula string) bool {
-	// Empty formula is invalid
-	if len(strings.TrimSpace(formula)) == 0 {
-		return false
-	}
-
-	if strings.Count(formula, "[") != strings.Count(formula, "]") {
-		return false
-	}
-
-	formulaNoSpaces := strings.ReplaceAll(formula, " ", "")
-
-	i := 0
-	for i < len(formulaNoSpaces) {
-		if formulaNoSpaces[i] == '[' {
-			endBracket := strings.Index(formulaNoSpaces[i:], "]")
-			if endBracket == -1 {
-				return false
-			}
-			endBracket += i
-
-			isotopePart := formulaNoSpaces[i+1 : endBracket]
-			matched, _ := regexp.MatchString(`\d+[A-Z][a-z]?(-?\d+)?`, isotopePart)
-			if !matched {
-				return false
-			}
-			i = endBracket + 1
-
-			if i < len(formulaNoSpaces) && (formulaNoSpaces[i] == '-' || unicode.IsDigit(rune(formulaNoSpaces[i]))) {
-				j := i
-				if formulaNoSpaces[j] == '-' {
-					j++
-				}
-				for j < len(formulaNoSpaces) && unicode.IsDigit(rune(formulaNoSpaces[j])) {
-					j++
-				}
-				i = j
-			}
-		} else if unicode.IsUpper(rune(formulaNoSpaces[i])) {
-			i++
-			if i < len(formulaNoSpaces) && unicode.IsLower(rune(formulaNoSpaces[i])) {
-				i++
-			}
-
-			if i < len(formulaNoSpaces) && (formulaNoSpaces[i] == '-' || unicode.IsDigit(rune(formulaNoSpaces[i]))) {
-				j := i
-				if formulaNoSpaces[j] == '-' {
-					j++
-				}
-				for j < len(formulaNoSpaces) && unicode.IsDigit(rune(formulaNoSpaces[j])) {
-					j++
-				}
-				i = j
-			}
-		} else {
-			return false
-		}
-	}
-
-	return true
-}
-
-// _validateGlycan statically validates a glycan string
-func _validateGlycan(glycan string) bool {
-	glycanClean := strings.ReplaceAll(glycan, " ", "")
-
-	monos := []string{
-		"Hex", "HexNAc", "HexS", "HexP", "HexNAcS",
-		"dHex", "NeuAc", "NeuGc", "Pen", "Fuc",
-	}
-
-	// Sort by length (longest first) to avoid partial matches
-	sort.Slice(monos, func(i, j int) bool {
-		return len(monos[i]) > len(monos[j])
-	})
-
-	monoPattern := "^("
-	for i, mono := range monos {
-		if i > 0 {
-			monoPattern += "|"
-		}
-		monoPattern += regexp.QuoteMeta(mono)
-	}
-	monoPattern += `)((\\([1-9]\\d*\\))|[1-9]\\d*)?`
-
-	re := regexp.MustCompile(monoPattern)
-
-	i := 0
-	for i < len(glycanClean) {
-		if glycanClean[i] == '{' {
-			closeBrace := strings.Index(glycanClean[i:], "}")
-			if closeBrace == -1 {
-				return false
-			}
-			closeBrace += i
-
-			i = closeBrace + 1
-			isAtEnd := i == len(glycanClean)
-
-			if i < len(glycanClean) && glycanClean[i] == '(' {
-				closeParen := strings.Index(glycanClean[i:], ")")
-				if closeParen == -1 {
-					return false
-				}
-				closeParen += i
-				countStr := glycanClean[i+1 : closeParen]
-				matched, _ := regexp.MatchString(`^[1-9]\d*$`, countStr)
-				if !matched {
-					return false
-				}
-				i = closeParen + 1
-			} else if i < len(glycanClean) && unicode.IsDigit(rune(glycanClean[i])) {
-				start := i
-				for i < len(glycanClean) && unicode.IsDigit(rune(glycanClean[i])) {
-					i++
-				}
-				countStr := glycanClean[start:i]
-				matched, _ := regexp.MatchString(`^[1-9]\d*$`, countStr)
-				if !matched {
-					return false
-				}
-			} else if !isAtEnd {
-				return false
-			}
-			continue
-		}
-
-		match := re.FindStringSubmatch(glycanClean[i:])
-		if match == nil {
-			return false
-		}
-
-		monoLength := len(match[0])
-		hasCount := len(match) > 2 && match[2] != ""
-		i += monoLength
-
-		isAtEnd := i == len(glycanClean)
-		if !hasCount && !isAtEnd {
-			return false
-		}
-	}
-
-	return i == len(glycanClean)
-}
-
 // Get returns pipe value at index
 func (mv *ModificationValue) Get(index int) *PipeValue {
 	if index >= 0 && index < len(mv.pipeValues) {
@@ -355,9 +209,9 @@ func (mv *ModificationValue) processPrimaryValue(value string) {
 	} else if strings.HasPrefix(value, "#") {
 		// Handle crosslink or ambiguity reference
 		mv.primaryValue = ""
-		valueType := PipeValueTypeCrosslink
-		if strings.Contains(value[1:], "(") && strings.Contains(value[1:], ")") {
-			valueType = PipeValueTypeAmbiguity
+		valueType := PipeValueTypeAmbiguity
+		if classifyLabel(value[1:]) == labelKindCrosslink {
+			valueType = PipeValueTypeCrosslink
 		}
 
 		pipeVal := NewPipeValue(value, valueType, value)
@@ -437,19 +291,16 @@ func (mv *ModificationValue) processPrimaryValue(value string) {
 				baseValue := valueParts[0]
 				specialPart := valueParts[1]
 
-				// Create pipe value for base value
-				pipeVal := NewPipeValue(baseValue, PipeValueTypeSynonym, valueStr)
-				pipeVal.source = &source
-				mv.pipeValues = append(mv.pipeValues, pipeVal)
-
-				// Handle branch, ambiguity, or crosslink
+				// Handle branch, ambiguity, or crosslink - one merged pipe value, not a
+				// separate synonym plus a full-string-labeled value (which would round-trip
+				// as two "|"-joined parts instead of "value#label").
 				if specialPart == "BRANCH" {
-					branchVal := NewPipeValue(valueStr, PipeValueTypeBranch, valueStr)
+					branchVal := NewPipeValue(baseValue, PipeValueTypeBranch, valueStr)
 					branchVal.isBranch = true
 					branchVal.source = &source
 					mv.pipeValues = append(mv.pipeValues, branchVal)
-				} else if strings.Contains(specialPart, "(") && strings.Contains(specialPart, ")") {
-					ambVal := NewPipeValue(valueStr, PipeValueTypeAmbiguity, valueStr)
+				} else if classifyLabel(specialPart) == labelKindAmbiguity {
+					ambVal := NewPipeValue(baseValue, PipeValueTypeAmbiguity, valueStr)
 					ambiguityGroup := specialPart
 					ambVal.ambiguityGroup = &ambiguityGroup
 					ambVal.source = &source
@@ -468,7 +319,7 @@ func (mv *ModificationValue) processPrimaryValue(value string) {
 
 					mv.pipeValues = append(mv.pipeValues, ambVal)
 				} else {
-					xlVal := NewPipeValue(valueStr, PipeValueTypeCrosslink, valueStr)
+					xlVal := NewPipeValue(baseValue, PipeValueTypeCrosslink, valueStr)
 					xlVal.crosslinkID = &specialPart
 					xlVal.source = &source
 					mv.pipeValues = append(mv.pipeValues, xlVal)
@@ -506,10 +357,45 @@ func (mv *ModificationValue) processPrimaryValue(value string) {
 				mv.pipeValues = append(mv.pipeValues, infoVal)
 			}
 		} else {
-			// Unknown source, treat as info tag
-			mv.primaryValue = value
-			infoVal := NewPipeValue(value, PipeValueTypeInfoTag, value)
-			mv.pipeValues = append(mv.pipeValues, infoVal)
+			// Unrecognized source: keep the colon as part of the literal name, but still split a trailing #label.
+			if strings.Contains(value, "#") {
+				valueParts := strings.SplitN(value, "#", 2)
+				baseValue := valueParts[0]
+				specialPart := valueParts[1]
+
+				mv.primaryValue = baseValue
+
+				if specialPart == "BRANCH" {
+					branchVal := NewPipeValue(baseValue, PipeValueTypeBranch, value)
+					branchVal.isBranch = true
+					mv.pipeValues = append(mv.pipeValues, branchVal)
+				} else if classifyLabel(specialPart) == labelKindAmbiguity {
+					ambVal := NewPipeValue(baseValue, PipeValueTypeAmbiguity, value)
+					ambiguityGroup := specialPart
+					ambVal.ambiguityGroup = &ambiguityGroup
+
+					re := regexp.MustCompile(`\(([\d.]+)\)`)
+					matches := re.FindStringSubmatch(specialPart)
+					if len(matches) > 1 {
+						score, err := strconv.ParseFloat(matches[1], 64)
+						if err == nil {
+							ambVal.localizationScore = &score
+							cleanGroup := re.ReplaceAllString(ambiguityGroup, "")
+							ambVal.ambiguityGroup = &cleanGroup
+						}
+					}
+
+					mv.pipeValues = append(mv.pipeValues, ambVal)
+				} else {
+					xlVal := NewPipeValue(baseValue, PipeValueTypeCrosslink, value)
+					xlVal.crosslinkID = &specialPart
+					mv.pipeValues = append(mv.pipeValues, xlVal)
+				}
+			} else {
+				mv.primaryValue = value
+				infoVal := NewPipeValue(value, PipeValueTypeInfoTag, value)
+				mv.pipeValues = append(mv.pipeValues, infoVal)
+			}
 		}
 	} else {
 		// No source prefix
@@ -520,19 +406,12 @@ func (mv *ModificationValue) processPrimaryValue(value string) {
 
 			mv.primaryValue = baseValue
 
-			// Base value as synonym
-			if baseValue != "" {
-				synVal := NewPipeValue(baseValue, PipeValueTypeSynonym, value)
-				mv.pipeValues = append(mv.pipeValues, synVal)
-			}
-
-			// Handle special part
 			if specialPart == "BRANCH" {
-				branchVal := NewPipeValue(value, PipeValueTypeBranch, value)
+				branchVal := NewPipeValue(baseValue, PipeValueTypeBranch, value)
 				branchVal.isBranch = true
 				mv.pipeValues = append(mv.pipeValues, branchVal)
-			} else if strings.Contains(specialPart, "(") && strings.Contains(specialPart, ")") {
-				ambVal := NewPipeValue(value, PipeValueTypeAmbiguity, value)
+			} else if classifyLabel(specialPart) == labelKindAmbiguity {
+				ambVal := NewPipeValue(baseValue, PipeValueTypeAmbiguity, value)
 				ambiguityGroup := specialPart
 				ambVal.ambiguityGroup = &ambiguityGroup
 
@@ -542,7 +421,6 @@ func (mv *ModificationValue) processPrimaryValue(value string) {
 					score, err := strconv.ParseFloat(matches[1], 64)
 					if err == nil {
 						ambVal.localizationScore = &score
-						// Remove the score part from ambiguity group
 						cleanGroup := re.ReplaceAllString(ambiguityGroup, "")
 						ambVal.ambiguityGroup = &cleanGroup
 					}
@@ -550,7 +428,7 @@ func (mv *ModificationValue) processPrimaryValue(value string) {
 
 				mv.pipeValues = append(mv.pipeValues, ambVal)
 			} else {
-				xlVal := NewPipeValue(value, PipeValueTypeCrosslink, value)
+				xlVal := NewPipeValue(baseValue, PipeValueTypeCrosslink, value)
 				xlVal.crosslinkID = &specialPart
 				mv.pipeValues = append(mv.pipeValues, xlVal)
 			}
@@ -672,7 +550,7 @@ func (mv *ModificationValue) _processPipeComponent(component string) {
 				}
 			}
 
-			if strings.Contains(value, "#") {
+			if strings.ToUpper(source) != "INFO" && strings.Contains(value, "#") {
 				pvParts := strings.SplitN(value, "#", 2)
 				value = pvParts[0]
 				isValidGlycan := false
@@ -699,7 +577,7 @@ func (mv *ModificationValue) _processPipeComponent(component string) {
 					pipeVal = NewPipeValue(value, PipeValueTypeGlycan, component)
 					pipeVal.source = &source
 					pipeVal.isValidGlycan = isValidGlycan
-				} else if strings.ToUpper(source) == "GNO" || strings.ToUpper(*mv.source) == "G" {
+				} else if strings.ToUpper(source) == "GNO" || (mv.source != nil && strings.ToUpper(*mv.source) == "G") {
 					pipeVal = NewPipeValue(value, PipeValueTypeGlycan, component)
 					pipeVal.source = &source
 					pipeVal.isValidGlycan = true
@@ -722,7 +600,7 @@ func (mv *ModificationValue) _processPipeComponent(component string) {
 						pipeVal.isValidFormula = true
 					}
 
-					if strings.ToUpper(source) == "GNO" || strings.ToUpper(*mv.source) == "G" {
+					if strings.ToUpper(source) == "GNO" || (mv.source != nil && strings.ToUpper(*mv.source) == "G") {
 						pipeVal.AssignType(PipeValueTypeGap)
 					}
 
@@ -966,9 +844,9 @@ func validateFormula(formula string) bool {
 func validateGlycan(glycan string) bool {
 	glycanClean := strings.ReplaceAll(glycan, " ", "")
 
-	monos := []string{
-		"Hex", "HexNAc", "HexS", "HexP", "HexNAcS",
-		"dHex", "NeuAc", "NeuGc", "Pen", "Fuc",
+	monos := make([]string, 0, len(Monosaccharides))
+	for name := range Monosaccharides {
+		monos = append(monos, name)
 	}
 
 	// Sort by length (longest first) to avoid partial matches
@@ -986,9 +864,8 @@ func validateGlycan(glycan string) bool {
 	}
 	monoPattern += `)((\([1-9]\d*\))|[1-9]\d*)?`
 
-	// ProForma 2.1: Pattern for custom monosaccharides in curly braces
-	// Format: {Formula} or {Formula:z+N} - count must start with 1-9
-	customMonoPattern := `^\{([A-Za-z0-9]+)(:z[+-]\d+)?\}((\([1-9]\d*\))|[1-9]\d*)?`
+	// ProForma 2.1: Pattern for custom monosaccharides in curly braces, e.g. {C8H13[15N1]O5} or {Formula:z+N}
+	customMonoPattern := `^\{([^{}:]+)(:z[+-]\d+)?\}((\([1-9]\d*\))|[1-9]\d*)?`
 
 	standardRe := regexp.MustCompile(monoPattern)
 	customRe := regexp.MustCompile(customMonoPattern)
