@@ -84,13 +84,13 @@ span.deprecated-tag {
 
 #generated-by-footer { font-size: x-small; }
 
-/* Background */ .bg { background-color: #ffffff; }
-/* PreWrapper */ .chroma { background-color: #ffffff; }
+/* Background */ .bg { background-color: #f7f7f7; }
+/* PreWrapper */ .chroma { background-color: #f7f7f7; -webkit-text-size-adjust: none; }
 /* Error */ .chroma .err { color: #f6f8fa; background-color: #82071e }
 /* LineLink */ .chroma .lnlinks { outline: none; text-decoration: none; color: inherit }
 /* LineTableTD */ .chroma .lntd { vertical-align: top; padding: 0; margin: 0; border: 0; }
 /* LineTable */ .chroma .lntable { border-spacing: 0; padding: 0; margin: 0; border: 0; }
-/* LineHighlight */ .chroma .hl { background-color: #e5e5e5 }
+/* LineHighlight */ .chroma .hl { background-color: #dedede }
 /* LineNumbersTable */ .chroma .lnt { white-space: pre; -webkit-user-select: none; user-select: none; margin-right: 0.4em; padding: 0 0.4em 0 0.4em;color: #7f7f7f }
 /* LineNumbers */ .chroma .ln { white-space: pre; -webkit-user-select: none; user-select: none; margin-right: 0.4em; padding: 0 0.4em 0 0.4em;color: #7f7f7f }
 /* Line */ .chroma .line { display: flex; }
@@ -142,6 +142,7 @@ span.deprecated-tag {
 /* LiteralNumberOct */ .chroma .mo { color: #0550ae }
 /* Operator */ .chroma .o { color: #0550ae }
 /* OperatorWord */ .chroma .ow { color: #0550ae }
+/* OperatorReserved */ .chroma .or { color: #0550ae }
 /* Punctuation */ .chroma .p { color: #1f2328 }
 /* Comment */ .chroma .c { color: #57606a }
 /* CommentHashbang */ .chroma .ch { color: #57606a }
